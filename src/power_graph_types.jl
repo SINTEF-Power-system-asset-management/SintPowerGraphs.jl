@@ -1,7 +1,9 @@
 using LightGraphs
 using MetaGraphs
 
-mutable struct RadialPowerGraph
+abstract type PowerGraph end
+
+mutable struct RadialPowerGraph <: PowerGraph
     G::MetaDiGraph # graph containing the power network 
     mpc::Dict
     ref_bus::Int # The id of the reference bus

@@ -15,5 +15,8 @@ function directed_from_feeder(G::MetaDiGraph, feeder_node::Int)
     return dfs_tree(undirected, feeder_node)
 end
 
-#function merge_line_segments(G::RadialPowerGraph)
+# function merge_line_segments(G::RadialPowerGraph)
+    # # The graph where line segments have been joined
+    # min_line_graph = Graph(2)
+        
 
