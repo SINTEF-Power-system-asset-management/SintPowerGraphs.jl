@@ -1,6 +1,6 @@
 using PowerGraphs
 using Test 
 
-@test test_graph == test.radial
-
-
+@testset "Check construction of radial graph" begin
+    @test test_graph == test.radial
+end

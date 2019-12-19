@@ -13,5 +13,14 @@ function convert_case(mpc::Dict)
             ref_bus = bus["bus_i"]
         end
     end
+    # If there is a load on the bus, save the location of the load in the load vector
+    for (index, load) in mpc["load"]
+        set_prop!(G, load["load_bus"], :load_i, index)
+    end
+    # If there is a generator on the bus, save the location of the generator 
+    # in the generator vector
+    for (index, gen) in mpc["gen"]
+        set_prop!(G, gen["gen_bus"], :gen_i, index)
+    end
     return G, ref_bus
 end
