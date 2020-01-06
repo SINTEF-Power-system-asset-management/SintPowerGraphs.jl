@@ -4,3 +4,5 @@ include("set_up_simple_test_system.jl")
 include("test_radial_power_graph.jl")
 include("test_power_graph_properties.jl")
 
+include("test_circuit_operations.jl")
+
