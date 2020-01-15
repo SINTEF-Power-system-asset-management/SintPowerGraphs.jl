@@ -18,7 +18,7 @@ end
 function merge_line_segments(network::RadialPowerGraph)::RadialPowerGraph
     red_net = RadialPowerGraph()
     add_vertex!(red_net.G)
-    red_net.ref_bus = network.ref_bus
+    red_net.ref_bus = 1
     # Copy the part of the mpc structure that are not dictionaries.
     # Note, the code does not copy the values only the keys.
     red_net.mpc = Dict(key=> typeof(value)==Dict{String, Any} ? Dict{String, Any}() : value for (key, value) in network.mpc)
@@ -34,7 +34,7 @@ function merge_line_segments(network::RadialPowerGraph)::RadialPowerGraph
     n_edges = 0
 
     # Keep track of the mapping between new and old bus numbers
-    bus_map = Dict(1 => 1)
+    bus_map = Dict(network.ref_bus => 1)
 
     π = π_segment(0, 0, 0)
 
@@ -50,6 +50,12 @@ function merge_line_segments(network::RadialPowerGraph)::RadialPowerGraph
             n_edges += 1
             # add the bus and the line
             add_vertex!(red_net.G)
+            if from_bus == 57
+                @show from_bus
+                @show bus
+                @show bus_map
+                @show bus_map[from_bus]
+            end
             add_edge!(red_net.G, bus_map[from_bus], n_vertices)
             
             red_net.mpc["bus"][repr(n_vertices)] = copy(get_bus_data(network, bus))

@@ -4,6 +4,7 @@ authors = ["Sigurd Hofsmo Jakobsen <sigurd.jakobsen@sintef.no>"]
 version = "0.1.0"
 
 [deps]
+Debugger = "31a5f54b-26ea-5ae9-a837-f05ce5417438"
 LightGraphs = "093fc24a-ae57-5d10-9952-331d41423f4d"
 MetaGraphs = "626554b9-1ddb-594c-aa3c-2596fe9399a5"
 PowerModels = "c36e90e8-916a-50a6-bd94-075b64ef4655"
