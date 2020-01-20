@@ -1,13 +1,19 @@
 using LightGraphs
 using MetaGraphs
 
-abstract type PowerGraph end
+abstract type PowerGraphBase end
 
-mutable struct RadialPowerGraph <: PowerGraph
+mutable struct RadialPowerGraph <: PowerGraphBase
     G::MetaDiGraph # graph containing the power network 
     mpc::Dict{String, Any}
     ref_bus::Int # The id of the reference bus
     radial::DiGraph # The graph directed from the transmission node
+end
+
+mutable struct PowerGraph <: PowerGraphBase
+    G::MetaDiGraph
+    mpc::Dict{String, Any}
+    ref_bus::Int
 end
 
 function RadialPowerGraph()
@@ -17,3 +23,5 @@ function RadialPowerGraph()
     radial = DiGraph()
     RadialPowerGraph(G, mpc, ref_bus, radial)
 end
+
+
