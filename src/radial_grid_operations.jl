@@ -17,8 +17,7 @@ function merge_line_segments(network::RadialPowerGraph)::RadialPowerGraph
 
     # Set other mpc struct things
     red_net.mpc["baseMVA"] = network.mpc["baseMVA"]
-   
-    from_bus = 0
+    
     gen_count = 1
     load_count = 1
 
@@ -29,52 +28,64 @@ function merge_line_segments(network::RadialPowerGraph)::RadialPowerGraph
     bus_map = Dict(network.ref_bus => 1)
 
     π = π_segment(0, 0, 0)
-
-    for edge in edges(network.radial)
+    edge_list = edges(network.radial)
+    vertices = dfs_iter(network.radial, network.ref_bus)
+    orig_vertices = size(vertices, 1)
+    from_bus = vertices[1]
+    index = 1
+    while index < orig_vertices
+        f_bus = vertices[index]
+        t_bus = vertices[index+1]
+        
+        # If the last bus we visited were an end bus we need to find an intersection
         if from_bus == 0
-            from_bus = src(edge)
+            find_intersection = true
+            go_back = 1
+            while find_intersection
+                f_bus = vertices[index-go_back]
+                if has_edge(network.radial, f_bus, t_bus)
+                    from_bus = f_bus
+                    find_intersection = false
+                else
+                    go_back += 1
+                end
+            end
         end
-        bus = dst(edge)
-        neighbor_count = length(neighbors(network.radial, bus))
-        # Check if the we have reached a load, generator or end of radial
-        if is_gen_bus(network, bus) || is_load_bus(network, bus) || neighbor_count != 1
+
+        neighbor_count = length(neighbors(network.radial, t_bus))
+        # Check if the we have reached a load, generator, intersection or end of radial
+        if is_gen_bus(network, t_bus) || is_load_bus(network, t_bus) || neighbor_count != 1
             n_vertices += 1
             n_edges += 1
             # add the bus and the line
             add_vertex!(red_net.G)
-            if from_bus == 57
-                @show from_bus
-                @show bus
-                @show bus_map
-                @show bus_map[from_bus]
-            end
             add_edge!(red_net.G, bus_map[from_bus], n_vertices)
             
-            red_net.mpc["bus"][repr(n_vertices)] = copy(get_bus_data(network, bus))
+            red_net.mpc["bus"][repr(n_vertices)] = copy(get_bus_data(network, t_bus))
             red_net.mpc["bus"][repr(n_vertices)]["bus"] = repr(n_vertices)
             red_net.mpc["bus"][repr(n_vertices)]["index"] = repr(n_vertices)
                 
             # This can be fixed more elegantly using metaprogramming
-            if is_gen_bus(network, bus)
-                red_net.mpc["gen"][repr(gen_count)] = get_prop(network.G, bus, :gen)
+            if is_gen_bus(network, t_bus)
+                red_net.mpc["gen"][repr(gen_count)] = get_prop(network.G, t_bus, :gen)
                 red_net.mpc["gen"]["gen_bus"] = bus_map[from_bus]
                 set_prop!(red_net.G, n_vertices, :gen, red_net.mpc["gen"])
                 set_prop!(red_net.G, n_vertices, :gen_i, gen_count)
                 gen_count += 1
             end
-            if is_load_bus(network, bus)
-                red_net.mpc["load"][repr(load_count)] = get_prop(network.G, bus, :load)
+            if is_load_bus(network, t_bus)
+                red_net.mpc["load"][repr(load_count)] = get_prop(network.G, t_bus, :load)
                 red_net.mpc["load"]["load_bus"] = bus_map[from_bus]
                 set_prop!(red_net.G, n_vertices, :load, red_net.mpc["load"])
                 set_prop!(red_net.G, n_vertices, :load_i, load_count)
                 load_count += 1
             end
-            red_net.mpc["branch"][repr(n_edges)] = copy(get_branch_data(network, src(edge), bus))
+            red_net.mpc["branch"][repr(n_edges)] = copy(get_branch_data(network, f_bus, t_bus))
             branch = red_net.mpc["branch"][repr(n_edges)]
             branch["f_bus"] = repr(bus_map[from_bus])
             branch["t_bus"] = repr(repr(n_vertices))
 
-            π += get_π_equivalent(network, src(edge), bus)
+            π += get_π_equivalent(network, f_bus, t_bus)
             branch["br_r"] = real(π.Z)
             branch["br_x"] = imag(π.Z)
             branch["g_fr"] = real(π.Y₁)
@@ -85,7 +96,7 @@ function merge_line_segments(network::RadialPowerGraph)::RadialPowerGraph
             set_branch_data!(red_net, bus_map[from_bus], n_vertices, branch)
             set_bus_data!(red_net, n_vertices, red_net.mpc["bus"][repr(n_vertices)])
             
-            bus_map[bus] = n_vertices
+            bus_map[t_bus] = n_vertices
 
             for field in fieldnames(π_segment)
                 setfield!(π, field, 0)
@@ -94,11 +105,15 @@ function merge_line_segments(network::RadialPowerGraph)::RadialPowerGraph
             if neighbor_count == 0
                 from_bus = 0
             else
-                from_bus = bus
+                from_bus = t_bus
             end
         else
-            π += get_π_equivalent(network, src(edge), bus)
+            @show f_bus
+            @show t_bus
+            π += get_π_equivalent(network, f_bus, t_bus)
+            @show π 
         end
+        index += 1
     end
     red_net.radial = DiGraph(red_net.G)
     return red_net

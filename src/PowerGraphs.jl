@@ -15,4 +15,8 @@ export get_bus_data, get_branch_data, is_load_bus, is_gen_bus, set_branch_data!,
 include("circuit_operations.jl")
 export π_segment
 
+include("graph_functions.jl")
+export dfs_iter
+
+
 end # module
