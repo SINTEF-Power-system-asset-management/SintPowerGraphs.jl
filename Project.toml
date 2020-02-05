@@ -4,7 +4,12 @@ authors = ["Sigurd Hofsmo Jakobsen <sigurd.jakobsen@sintef.no>"]
 version = "0.1.0"
 
 [deps]
+Cairo = "159f3aea-2a34-519c-b102-8c37f9878175"
+Compose = "a81c6b42-2e10-5240-aca2-a61377ecd94b"
 Debugger = "31a5f54b-26ea-5ae9-a837-f05ce5417438"
+Fontconfig = "186bb1d3-e1f7-5a2c-a377-96d770f13627"
+Gadfly = "c91e804a-d5a3-530f-b6f0-dfbca275c004"
+GraphPlot = "a2cc645c-3eea-5389-862e-a155d0052231"
 LightGraphs = "093fc24a-ae57-5d10-9952-331d41423f4d"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 MetaGraphs = "626554b9-1ddb-594c-aa3c-2596fe9399a5"

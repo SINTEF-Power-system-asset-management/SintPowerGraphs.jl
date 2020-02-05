@@ -8,6 +8,8 @@ Z₁ = π_segment(1, 1, 1)
     @test Z.Z == 0
     @test Z.Y₁ == 0
     @test Z.Y₂ == 0
+
+    @test is_zero_impedance_line(Z)
     
     Z = Z₀ + Z₁
     @test Z.Z == 1
