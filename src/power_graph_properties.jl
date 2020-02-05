@@ -71,10 +71,19 @@ end
 """
 function get_π_equivalent(network::PowerGraphBase, from_bus::Int, to_bus::Int)::π_segment
     branch = get_branch_data(network, from_bus, to_bus)
-    
+    return get_π_equivalent(network, branch)  
+end
+
+function get_π_equivalent(network::PowerGraphBase, branch::Dict{String, Any})::π_segment
     return π_segment(branch["br_r"]+branch["br_x"]im,
                      branch["g_fr"]+branch["b_fr"]im,
                      branch["g_to"]+branch["b_to"]im,)
+end
+
+function get_π_equivalent(network::PowerGraphBase, 
+                          edge::LightGraphs.SimpleGraphs.SimpleEdge{Int64})
+    branch = get_branch_data(network, edge)
+    return get_π_equivalent(network, branch)  
 end
 
 """

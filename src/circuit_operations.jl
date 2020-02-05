@@ -20,7 +20,7 @@ function (+)(π₁::π_segment, π₂::π_segment)
 
     # Do the Y-Δ transformation
     Z = π₁.Z + π₂.Z + π₁.Z*π₂.Z*Y₁₂
-    # In case Z is zero just treat the both impedances as short circuits
+    # In case Z is zero just treat both impedances as short circuits
     if Z == 0
         Y₁ = Y₁₂
         Y₂ = Y₁₂
@@ -32,6 +32,14 @@ function (+)(π₁::π_segment, π₂::π_segment)
     π_segment(Z, π₁.Y₁+Y₁, π₂.Y₂+Y₂)
 end
 
-function (==)(π₁::π_segment, π₂::π_segment)
+function (==)(π₁::π_segment, π₂::π_segment)::Bool
     return π₁.Z == π₂.Z && π₁.Y₁ == π₂.Y₁ && π₁.Y₂ == π₂.Y₂ 
+end
+
+function is_zero_impedance_line(π::π_segment)::Bool
+    return 0.0 == π.Z
+end
+
+function series_impedance_norm(π::π_segment)::Float64
+    return abs(π.Z)
 end
