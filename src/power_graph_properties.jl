@@ -6,7 +6,7 @@ using SparseArrays
 
     Return a dictionary containing the dictionary with the buse data.
 """
-function get_bus_data(network::PowerGraphBase, bus_id::Int)::Dict
+function get_bus_data(network::PowerGraphBase, bus_id::Int)::DataFrameRow
     return get_prop(network.G, bus_id, :data)
 end
 
@@ -33,7 +33,7 @@ end
 
     Return a dictionary containing the dictionary with the buse data.
 """
-function get_branch_data(network::PowerGraphBase, f_bus::Int, t_bus::Int)::Dict
+function get_branch_data(network::PowerGraphBase, f_bus::Int, t_bus::Int)::DataFrameRow
     if has_edge(network.G, f_bus, t_bus)
         return get_prop(network.G, f_bus, t_bus, :data)
     else
@@ -42,7 +42,7 @@ function get_branch_data(network::PowerGraphBase, f_bus::Int, t_bus::Int)::Dict
 end
 
 function get_branch_data(network::PowerGraphBase,
-                         edge::LightGraphs.SimpleGraphs.SimpleEdge{Int64})::Dict
+                         edge::LightGraphs.SimpleGraphs.SimpleEdge{Int64})::DataFrameRow
     return get_prop(network.G, edge, :data)
 end
 
@@ -52,7 +52,7 @@ end
     Returns true if the bus bus_id is a load.
 """
 function is_load_bus(network::PowerGraphBase, bus_id::Int)
-    return haskey(props(network.G, bus_id), :load_i)
+    return network.mpc.bus[bus_id,:Pd]>0
 end
 
 """
@@ -61,7 +61,7 @@ end
     Returns true if the bus bus_id is a load.
 """
 function is_gen_bus(network::PowerGraphBase, bus_id::Int)
-    return haskey(props(network.G, bus_id), :gen_i)
+    return haskey(props(network.G, bus_id), :gen)
 end
 
 """
@@ -100,11 +100,6 @@ end
     Returns the susceptance vector for performing a dc power flow.
 """
 function get_susceptance_vector(network::PowerGraphBase)::Array{Float64,1}
-    B = Vector{Float64}(undef, ne(network.G))
-    for (index, edge) in enumerate(edges(network.G))
-        branch = get_branch_data(network, edge)
-        B[index] = 1/branch["br_x"]
-    end
-    return B
+    return map(x-> 1/x, network.mpc.branch[:,:x])
 end
 
