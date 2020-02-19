@@ -1,11 +1,11 @@
 module PowerGraphs
 
+include("case_format.jl")
+export Case
+
 include("power_graph_types.jl")
 export RadialPowerGraph, PowerGraph
 
-include("graph_constructors.jl")
-
-include("models_to_graph.jl")
 include("radial_grid_operations.jl")
 export merge_line_segments, directed_from_feeder, remove_zero_impedance_lines, remove_low_impedance_lines
 
@@ -20,5 +20,6 @@ export dfs_iter
 
 include("plot_graphs.jl")
 export plot_to_web
+
 
 end # module

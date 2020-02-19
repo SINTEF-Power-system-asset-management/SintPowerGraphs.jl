@@ -1,6 +1,6 @@
 using PowerGraphs
 
-filepath = joinpath(@__DIR__, "bus_6.m")
+filepath = joinpath(@__DIR__, "cases", "bus_6.toml")
 example = RadialPowerGraph(filepath)
 
 red_example = merge_line_segments(example)
