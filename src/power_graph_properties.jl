@@ -2,30 +2,68 @@ using LightGraphs.LinAlg
 using LinearAlgebra
 using SparseArrays
 """ 
+    get_bus_data!(network::PowerGraphBase, bus_id::Int)
+
+    Return a DataFrameRow with the bus data.
+"""
+function get_bus_data!(network::PowerGraphBase, bus_id::Int)::DataFrameRow
+    return get_bus!(network.mpc, bus_id)
+end
+
+""" 
     get_bus_data(network::PowerGraphBase, bus_id::Int)
 
-    Return a dictionary containing the dictionary with the buse data.
+    Return a copy of the DataFrameRow with the bus data.
 """
 function get_bus_data(network::PowerGraphBase, bus_id::Int)::DataFrameRow
-    return get_prop(network.G, bus_id, :data)
+    return get_bus(network.mpc, bus_id)
 end
 
-""" 
-set_bus_data!(network::PowerGraphBase, bus_id::Int, data::Dict{String, Any})
-
-    Set the data to be stored on the bus
-"""
-function set_bus_data!(network::PowerGraphBase, bus_id::Int, data::Dict{String, Any})
-    set_prop!(network.G, bus_id, :data, data)
+function get_gen_data!(network::PowerGraphBase, bus_id::Int)::DataFrame
+    return get_gen!(network.mpc, bus_id)
 end
 
-""" 
-set_branch_data!(network::PowerGraphBase, bus_id::Int, data::Dict{String, Any})
+function get_gen_data(network::PowerGraphBase, bus_id::Int)::DataFrame
+    return get_gen(network.mpc, bus_id)
+end
 
-    Sets the data to be stored on the branch
-"""
-function set_branch_data!(network::PowerGraphBase, f_bus::Int, t_bus::Int, data::Dict{String, Any})
-    return set_prop!(network.G, f_bus, t_bus, :data, data)
+function push_bus!(network::PowerGraphBase, data::DataFrameRow)
+    add_vertex!(network.G)
+    push_bus!(network.mpc, data)
+end
+
+function push_gen!(network::PowerGraphBase, data::DataFrame)
+    for gen in eachrow(data)
+        push_gen!(network, gen)
+    end
+end
+
+function push_gen!(network::PowerGraphBase, data::DataFrame, bus::Int)
+    for gen in eachrow(data)
+        push_gen!(network, gen, bus)
+    end
+end
+
+function push_gen!(network::PowerGraphBase, data::DataFrameRow)
+    push_gen!(network.mpc, data)
+end
+
+function push_gen!(network::PowerGraphBase, data::DataFrameRow, bus::Int)
+    data[:bus] = bus
+    push_gen!(network, data)
+end
+
+function push_branch!(network::PowerGraphBase, f_bus::Int, t_bus::Int, data::DataFrameRow)
+    data[:f_bus] = f_bus
+    data[:t_bus] = t_bus
+    add_edge!(network.G, f_bus, t_bus)
+    push_branch!(network.mpc, data) 
+end
+
+function push_branch!(network::PowerGraphBase, f_bus::Int, t_bus::Int, data::DataFrame)
+    for branch in eachrow(data)
+        push_branch!(network, f_bus, t_bus, branch)
+    end
 end
 
 """ 
@@ -33,17 +71,16 @@ end
 
     Return a dictionary containing the dictionary with the buse data.
 """
-function get_branch_data(network::PowerGraphBase, f_bus::Int, t_bus::Int)::DataFrameRow
+function get_branch_data(network::PowerGraphBase, f_bus::Int, t_bus::Int)::DataFrame
     if has_edge(network.G, f_bus, t_bus)
-        return get_prop(network.G, f_bus, t_bus, :data)
+        return get_branch(network.mpc, f_bus, t_bus)
     else
-        return get_prop(network.G, t_bus, f_bus, :data)
+        return get_branch(network.mpc, t_bus, f_bus)
     end
 end
 
-function get_branch_data(network::PowerGraphBase,
-                         edge::LightGraphs.SimpleGraphs.SimpleEdge{Int64})::DataFrameRow
-    return get_prop(network.G, edge, :data)
+function set_branch_data!(network::PowerGraphBase, f_bus::Int, t_bus::Int, data::DataFrame)
+    set_branch!(network.mpc, f_bus, t_bus, data)
 end
 
 """
@@ -61,7 +98,7 @@ end
     Returns true if the bus bus_id is a load.
 """
 function is_gen_bus(network::PowerGraphBase, bus_id::Int)
-    return haskey(props(network.G, bus_id), :gen)
+    return is_gen_bus(network.mpc, bus_id)
 end
 
 """
@@ -71,19 +108,19 @@ end
 """
 function get_π_equivalent(network::PowerGraphBase, from_bus::Int, to_bus::Int)::π_segment
     branch = get_branch_data(network, from_bus, to_bus)
-    return get_π_equivalent(network, branch)  
+    if nrow(branch)>1
+        @warn string("The branch ", repr(from_bus), "-", repr(to_bus),
+                     " is parallel")
+    elseif nrow(branch) == 0
+        return π_segment(0, 0, 0)
+    end
+    return get_π_equivalent(branch[1,:])  
 end
 
-function get_π_equivalent(network::PowerGraphBase, branch::Dict{String, Any})::π_segment
-    return π_segment(branch["br_r"]+branch["br_x"]im,
-                     branch["g_fr"]+branch["b_fr"]im,
-                     branch["g_to"]+branch["b_to"]im,)
-end
-
-function get_π_equivalent(network::PowerGraphBase, 
-                          edge::LightGraphs.SimpleGraphs.SimpleEdge{Int64})
-    branch = get_branch_data(network, edge)
-    return get_π_equivalent(network, branch)  
+function get_π_equivalent(branch::DataFrameRow)::π_segment
+    return π_segment(branch[:r]+branch[:x]im,
+                     0+0.5*branch[:b]im,
+                     0+0.5*branch[:b]im,)
 end
 
 """

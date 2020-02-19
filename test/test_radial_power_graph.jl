@@ -17,16 +17,10 @@ red_net = merge_line_segments(test)
 @testset "Check line merging" begin
     @test test_red_graph == red_net.radial
     @test test_red_graph != test.radial
-    @test red_net.mpc["bus"]["5"]["va"] == test.mpc["bus"]["6"]["va"]
+    @test red_net.mpc.bus[red_net.mpc.bus.ID .==6,:] == test.mpc.bus[test.mpc.bus.ID .==6,:]
     @test is_load_bus(red_net, 5)
     # The next test is sketchy since the bus does not end up where I expect it to be
     @test get_π_equivalent(red_net, 3, 4) == (get_π_equivalent(test, 3, 5)+get_π_equivalent(test,5,6))
-    for i = 1:2
-        @test haskey(red_net.mpc["load"], repr(i))
-    end
-    for (key, value) in red_net.mpc["bus"]
-        @test key == repr(value["index"])
-    end
 end
 
 test_no_zero = DiGraph(4)
@@ -39,13 +33,4 @@ add_edge!(test_no_zero, 2, 4)
     @test nv(no_zero.G) == 4
     from_feeder = directed_from_feeder(no_zero.G, 1)
     @test test_no_zero == from_feeder
-    for i = 1:3
-        @test haskey(no_zero.mpc["branch"], repr(i))
-    end
-    for (key, value) in no_zero.mpc["bus"]
-        @test key == repr(value["index"])
-    end
-    for (key, value) in no_zero.mpc["branch"]
-        @test key == repr(value["index"])
-    end
 end
