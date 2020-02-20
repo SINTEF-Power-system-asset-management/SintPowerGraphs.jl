@@ -593,7 +593,6 @@ git-tree-sha1 = "2dbfe34f210980d78f5bb0cd4b0f829ab3e4ceb4"
 repo-rev = "master"
 repo-url = "https://github.com/JuliaLang/TOML.jl"
 uuid = "191fdcea-f9f2-43e0-b922-d33f71e2abc3"
-version = "0.4.0"
 
 [[TableTraits]]
 deps = ["IteratorInterfaceExtensions"]
