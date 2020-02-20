@@ -137,6 +137,9 @@ end
     Returns the susceptance vector for performing a dc power flow.
 """
 function get_susceptance_vector(network::PowerGraphBase)::Array{Float64,1}
-    return map(x-> 1/x, network.mpc.branch[:,:x])
+    return get_susceptance_vector(network.mpc)
 end
 
+function get_power_injection_vector(network::PowerGraphBase)::Array{Float64, 1}
+    return get_power_injection_vector(network.mpc)
+end
