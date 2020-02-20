@@ -1,6 +1,6 @@
 using DataFrames
 using CSV
-import TOML
+import Pkg.TOML
 
 mutable struct Case
     baseMVA::Float64
