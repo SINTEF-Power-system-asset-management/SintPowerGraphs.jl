@@ -89,5 +89,10 @@ function get_susceptance_vector(case::Case)::Array{Float64, 1}
 end
 
 function get_power_injection_vector(case::Case)::Array{Float64, 1}
-    return case.bus[:, :Pd]
+    Pd = -case.bus[:, :Pd]
+    Pg = zeros(length(Pd), 1) 
+    for gen in eachrow(case.gen) 
+        Pg[gen.bus] = gen.Pg
+    end
+    return Pg[:] + Pd
 end

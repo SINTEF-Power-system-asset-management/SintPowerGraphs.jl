@@ -132,7 +132,7 @@ function get_dc_admittance_matrix(network::PowerGraphBase)::SparseMatrixCSC{Floa
     return A*spdiagm(0 => get_susceptance_vector(network))*A'
 end
 
-function get_incidence_matrix(network.PowerGraphBase)::SparseMatrixCSC{Float64, Int64}
+function get_incidence_matrix(network::PowerGraphBase)::SparseMatrixCSC{Float64, Int64}
     return incidence_matrix(network.G)
 end
 
