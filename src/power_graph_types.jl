@@ -30,10 +30,13 @@ function RadialPowerGraph(case_file::String)
     RadialPowerGraph(G, mpc, ref_bus, radial)
 end
 
-function PowerGraph(case_file::String)
-    mpc = Case(case_file::String)
+function PowerGraph(mpc::Case)
     G, ref_bus = read_case(mpc)
     PowerGraph(G, mpc, ref_bus)
+end
+
+function PowerGraph(case_file::String)
+    PowerGraph(Case(case_file::String))
 end
 
 function read_case(mpc::Case)
