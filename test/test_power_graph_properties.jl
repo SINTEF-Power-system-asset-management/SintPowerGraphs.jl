@@ -8,6 +8,10 @@ B = [b_12+b_13 -b_12 -b_13;
      -b_12 b_12+b_23 -b_23;
      -b_13 -b_23 b_13+b_23]
 
+A = [1 -1 0;
+     1 0 -1;
+     0 1 -1]
+
 test_3_bus = PowerGraph("cases/bus_3.toml")
 
 # The object test is from set_up_simple_test_system.jl
@@ -17,5 +21,6 @@ test_3_bus = PowerGraph("cases/bus_3.toml")
     @test is_load_bus(test, 4) # Check if the bus is a load bus
     @test is_gen_bus(test, 1) # Check if the bus is a load bus
     @test B == Array(get_dc_admittance_matrix(test_3_bus)) 
+    @test A == Array(get_incidence_matrix(test_3_bus))
 end
 

@@ -133,7 +133,7 @@ function get_dc_admittance_matrix(network::PowerGraphBase)::SparseMatrixCSC{Floa
 end
 
 function get_incidence_matrix(network::PowerGraphBase)::SparseMatrixCSC{Float64, Int64}
-    return incidence_matrix(network.G)
+    return -incidence_matrix(network.G)'
 end
 
 """
