@@ -147,3 +147,7 @@ end
 function get_power_injection_vector(network::PowerGraphBase)::Array{Float64, 1}
     return get_power_injection_vector(network.mpc)
 end
+
+function get_power_injection_vector_pu(network::PowerGraphBase)::Array{Float64, 1}
+    return get_power_injection_vector(network.mpc)/network.mpc.baseMVA
+end
