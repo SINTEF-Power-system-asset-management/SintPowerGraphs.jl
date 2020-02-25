@@ -22,5 +22,7 @@ test_3_bus = PowerGraph("cases/bus_3.toml")
     @test is_gen_bus(test, 1) # Check if the bus is a load bus
     @test B == Array(get_dc_admittance_matrix(test_3_bus)) 
     @test A == Array(get_incidence_matrix(test_3_bus))
+    @test n_edges(test_3_bus) == 3
+    @test n_vertices(test_3_bus) == 3
 end
 
