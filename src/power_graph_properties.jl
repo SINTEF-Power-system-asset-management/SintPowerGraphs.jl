@@ -169,3 +169,7 @@ function put_back_line!(network::PowerGraphBase, id::Int)
     branch = get_branch(network.mpc, id)
     add_edge!(network.G, branch.f_bus, branch.t_bus)
 end
+
+function get_line_lims_pu(network::PowerGraphBase)::Array{Float64}
+    return get_line_lims_pu(network.mpc)
+end

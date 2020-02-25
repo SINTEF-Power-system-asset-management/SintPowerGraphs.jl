@@ -100,3 +100,7 @@ function get_power_injection_vector(case::Case)::Array{Float64, 1}
     end
     return Pg[:] + Pd
 end
+
+function get_line_lims_pu(case::Case)::Array{Float64}
+    return case.branch.rateA/case.baseMVA
+end
