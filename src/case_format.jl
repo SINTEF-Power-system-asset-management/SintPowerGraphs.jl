@@ -62,6 +62,10 @@ function get_branch(mpc::Case, f_bus::Int, t_bus::Int)::DataFrame
                       (mpc.branch.t_bus .== t_bus),:]
 end
 
+function get_branch(mpc::Case, id::Int)::DataFrameRow
+    return mpc.branch[id,:]
+end
+
 function set_branch!(mpc::Case, f_bus::Int, t_bus::Int, data::DataFrame)
     mpc.branch[(mpc.branch.f_bus .== f_bus) .&
               (mpc.branch.t_bus .== t_bus), :] = data

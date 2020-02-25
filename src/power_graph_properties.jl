@@ -151,3 +151,21 @@ end
 function get_power_injection_vector_pu(network::PowerGraphBase)::Array{Float64, 1}
     return get_power_injection_vector(network.mpc)/network.mpc.baseMVA
 end
+
+function n_edges(network::PowerGraphBase)::Int
+    return ne(network.G)
+end
+
+function n_vertices(network::PowerGraphBase)::Int
+    return nv(network.G)
+end
+
+function take_out_line!(network::PowerGraphBase, id::Int)
+    branch = get_branch(network.mpc, id)
+    rem_edge!(network.G, branch.f_bus, branch.t_bus)
+end
+
+function put_back_line!(network::PowerGraphBase, id::Int)
+    branch = get_branch(network.mpc, id)
+    add_edge!(network.G, branch.f_bus, branch.t_bus)
+end
