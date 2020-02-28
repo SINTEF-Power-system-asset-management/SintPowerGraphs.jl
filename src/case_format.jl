@@ -7,6 +7,7 @@ mutable struct Case
     bus::DataFrame
     branch::DataFrame
     gen::DataFrame
+    gencost::DataFrame
 end
 
 function Case()::Case
@@ -14,7 +15,8 @@ function Case()::Case
     bus = DataFrame()
     branch = DataFrame()
     gen = DataFrame()
-    Case(baseMVA, bus, branch, gen)
+    gencost = DataFrame()
+    Case(baseMVA, bus, branch, gen, gencost)
 end
     
 
@@ -25,8 +27,9 @@ function Case(fname::String)::Case
     bus = CSV.File(joinpath(dir, files["bus"])) |> DataFrame
     branch = CSV.File(joinpath(dir, files["branch"])) |> DataFrame
     gen = CSV.File(joinpath(dir, files["gen"])) |> DataFrame
+    gencost = CSV.File(joinpath(dir, files["gencost"])) |> DataFrame
     baseMVA = conf["configuration"]["baseMVA"]
-    return Case(baseMVA, bus, branch, gen)
+    return Case(baseMVA, bus, branch, gen, gencost)
 end
 
 function push_bus!(mpc::Case, bus::DataFrameRow)

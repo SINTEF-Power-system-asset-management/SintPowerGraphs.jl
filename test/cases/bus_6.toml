@@ -2,6 +2,7 @@
 bus = "bus_6_bus.csv"
 branch = "bus_6_branch.csv"
 gen = "bus_6_gen.csv"
+gencost = "bus_6_gencost.csv"
 
 [configuration]
 baseMVA = 100.0
