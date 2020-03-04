@@ -1,0 +1,8 @@
+[files]
+bus = "bus_3_bus.csv"
+branch = "bus_3_branch.csv"
+gen = "bus_3_gen.csv"
+gencost = "bus_3_gencost.csv"
+
+[configuration]
+baseMVA = 100.0
