@@ -37,7 +37,7 @@ function Case(fname::String)::Case
         gencost = DataFrame()
     end
 
-        baseMVA = conf["configuration"]["baseMVA"]
+    baseMVA = conf["configuration"]["baseMVA"]
     return Case(baseMVA, bus, branch, gen, gencost)
 end
 
