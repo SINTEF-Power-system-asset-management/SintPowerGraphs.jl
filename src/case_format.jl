@@ -24,11 +24,20 @@ function Case(fname::String)::Case
     conf = TOML.parsefile(fname)
     dir = splitdir(fname)[1]
     files = conf["files"]
+    
+    # Mandatory files/content in Case
     bus = CSV.File(joinpath(dir, files["bus"])) |> DataFrame
     branch = CSV.File(joinpath(dir, files["branch"])) |> DataFrame
     gen = CSV.File(joinpath(dir, files["gen"])) |> DataFrame
-    gencost = CSV.File(joinpath(dir, files["gencost"])) |> DataFrame
-    baseMVA = conf["configuration"]["baseMVA"]
+    
+    # Optional files/content in Case
+    if haskey(files, "gencost")
+        gencost = CSV.File(joinpath(dir, files["gencost"])) |> DataFrame
+    else
+        gencost = DataFrame()
+    end
+
+        baseMVA = conf["configuration"]["baseMVA"]
     return Case(baseMVA, bus, branch, gen, gencost)
 end
 
