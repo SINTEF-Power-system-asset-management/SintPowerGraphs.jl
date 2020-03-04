@@ -1,8 +1,7 @@
 using PowerGraphs
 
-fname = "lionshield.m"
-fname = "test.m"
-filepath = joinpath(@__DIR__, fname)
+fname = "east_side.toml"
+filepath = joinpath(@__DIR__, joinpath("cases", fname))
 example = RadialPowerGraph(filepath)
 
 red_example = merge_line_segments(example)
