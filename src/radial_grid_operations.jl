@@ -7,10 +7,22 @@ function directed_from_feeder(G::DiGraph, feeder_node::Int)
     return dfs_tree(undirected, feeder_node)
 end
 
-function merge_line_segments(network::RadialPowerGraph)::RadialPowerGraph
+"""
+	merge_line_segments(network, keep)
+
+		Merges consecutive line segments not separated by loads or generators.
+
+		# Arguments
+		- `network::RadialPowerGraph`: The network to merge line segments on
+		- `keep_switches`::Bool=true: Keep switches.
+		- `keep_indicators`::Bool=true: Keep indicators.
+"""
+function merge_line_segments(network::RadialPowerGraph,
+							keep_switches::Bool=true,
+							keep_indicators::Bool=true)::RadialPowerGraph
     red_net = RadialPowerGraph()
     red_net.ref_bus = 1
-
+	
     # Set other mpc struct things
     gen_count = 1
     load_count = 1
@@ -53,11 +65,11 @@ function merge_line_segments(network::RadialPowerGraph)::RadialPowerGraph
                     go_back += 1
                 end
             end
-        end
+		end
 
         neighbor_count = length(neighbors(network.radial, t_bus))
         # Check if the we have reached a load, generator, intersection or end of radial
-        if is_gen_bus(network, t_bus) || is_load_bus(network, t_bus) || neighbor_count != 1
+		if is_gen_bus(network, t_bus) || is_load_bus(network, t_bus) || neighbor_count != 1 || (keep_switches && is_switch(network, f_bus, t_bus)) || (keep_indicators && is_indicator(network, f_bus, t_bus)) || (keep_switches && is_neighbor_switch(network, f_bus, t_bus)) || (keep_indicators && is_neighbor_indicator(network, f_bus, t_bus))
             n_vertices += 1
             n_edges += 1
             # add the bus and the line
@@ -77,6 +89,24 @@ function merge_line_segments(network::RadialPowerGraph)::RadialPowerGraph
             branch[1, :b] = 2*real(π.Y₁)
 
             set_branch_data!(red_net, bus_map[from_bus], n_vertices, branch)
+
+			# Fix from and to bus for switches or fault indicators
+			if is_switch(network, f_bus, t_bus)
+				push_switch!(red_net,
+							 bus_map[from_bus],
+							 n_vertices,
+							get_switch_data(network,
+											f_bus,
+											t_bus)[1,:])
+			end
+			if is_indicator(network, f_bus, t_bus)
+				push_indicator!(red_net,
+								bus_map[from_bus],
+								n_vertices,
+								get_indicator_data(network,
+												f_bus,
+												t_bus)[1,:])
+			end
             
             bus_map[t_bus] = n_vertices
 
@@ -88,7 +118,7 @@ function merge_line_segments(network::RadialPowerGraph)::RadialPowerGraph
                 from_bus = 0
             else
                 from_bus = t_bus
-            end
+			end
         else
             π += get_π_equivalent(network, f_bus, t_bus)
         end

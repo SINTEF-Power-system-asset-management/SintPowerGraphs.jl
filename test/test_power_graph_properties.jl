@@ -18,11 +18,13 @@ test_3_bus = PowerGraph("cases/bus_3.toml")
 @testset "Get network properties from the graph" begin
     @test get_bus_data(test, 1)[:type] == 3 # Check if the bus is the swing bus
     @test get_branch_data(test, 2, 3)[1, :x] == 0.5 # Check if the branch reactance is correct
-    @test is_load_bus(test, 4) # Check if the bus is a load bus
+    @test is_load_bus(test, 7) # Check if the bus is a load bus
     @test is_gen_bus(test, 1) # Check if the bus is a load bus
     @test B == Array(get_dc_admittance_matrix(test_3_bus)) 
     @test A == Array(get_incidence_matrix(test_3_bus))
     @test n_edges(test_3_bus) == 3
     @test n_vertices(test_3_bus) == 3
+	@test is_switch(test, 4, 7)
+	@test ~is_switch(test, 4, 9)
+	@test ~is_indicator(test, 4, 7)
 end
-
