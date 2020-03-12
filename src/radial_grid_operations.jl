@@ -16,11 +16,15 @@ end
 		- `network::RadialPowerGraph`: The network to merge line segments on
 		- `keep_switches`::Bool=true: Keep switches.
 		- `keep_indicators`::Bool=true: Keep indicators.
+		- `keep_loaddata`::Bool=true: Keep loaddata.
+		- `aggregators`::Dict{Symbol, Dict{Strig, Any}}=nothing: Sum up columns of the field Symbol given by String.
 """
-function merge_line_segments(network::RadialPowerGraph,
+function merge_line_segments(network::RadialPowerGraph;
 							keep_switches::Bool=true,
-							keep_indicators::Bool=true)::RadialPowerGraph
-    red_net = RadialPowerGraph()
+							keep_indicators::Bool=true,
+							keep_loaddata::Bool=true,
+							aggregators::Dict{Symbol, Dict{Symbol, Float64}}=Dict{Symbol, Dict{Symbol, Float64}}())
+	red_net = RadialPowerGraph()
     red_net.ref_bus = 1
 	
     # Set other mpc struct things
@@ -29,7 +33,7 @@ function merge_line_segments(network::RadialPowerGraph,
 
     n_vertices = 1
     n_edges = 0
-    
+
     # Keep track of the mapping between new and old bus numbers
     bus_map = Dict(network.ref_bus => 1)
     vertices = dfs_iter(network.radial, network.ref_bus)
@@ -74,12 +78,33 @@ function merge_line_segments(network::RadialPowerGraph,
             n_edges += 1
             # add the bus and the line
             push_bus!(red_net, get_bus_data(network, t_bus))
+			
+			if keep_loaddata && is_load_bus(network, t_bus)
+				push_loaddata!(red_net, get_loaddata(network, t_bus), n_vertices)
+			end
             
             # This can probably be fixed more elegantly using metaprogramming
             if is_gen_bus(network, t_bus)
                 temp = get_gen_data(network, t_bus)
-                push_gen!(red_net, temp, bus_map[from_bus]) 
+                push_gen!(red_net, temp, n_vertices) 
             end
+			if !isempty(aggregators)
+				for (field, columns) in aggregators
+					for (column, data) in columns
+						temp = get_branch_data(network,
+											   field,
+											   f_bus,
+											   t_bus)
+						temp[column] = aggregators[field][column]+get_branch_data(network, field, column, f_bus, t_bus)
+						push_branch!(red_net,
+									 field,
+									 bus_map[from_bus],
+									 n_vertices,
+									 temp)
+						aggregators[field][column] = 0.0
+					end
+				end
+			end
             branch = get_branch_data(network, f_bus, t_bus)
             push_branch!(red_net, bus_map[from_bus], n_vertices, branch)
             
@@ -91,7 +116,7 @@ function merge_line_segments(network::RadialPowerGraph,
             set_branch_data!(red_net, bus_map[from_bus], n_vertices, branch)
 
 			# Fix from and to bus for switches or fault indicators
-			if is_switch(network, f_bus, t_bus)
+			if keep_switches && is_switch(network, f_bus, t_bus)
 				push_switch!(red_net,
 							 bus_map[from_bus],
 							 n_vertices,
@@ -99,7 +124,7 @@ function merge_line_segments(network::RadialPowerGraph,
 											f_bus,
 											t_bus)[1,:])
 			end
-			if is_indicator(network, f_bus, t_bus)
+			if keep_indicators && is_indicator(network, f_bus, t_bus)
 				push_indicator!(red_net,
 								bus_map[from_bus],
 								n_vertices,
@@ -107,7 +132,7 @@ function merge_line_segments(network::RadialPowerGraph,
 												f_bus,
 												t_bus)[1,:])
 			end
-            
+
             bus_map[t_bus] = n_vertices
 
             for field in fieldnames(π_segment)
@@ -121,6 +146,13 @@ function merge_line_segments(network::RadialPowerGraph,
 			end
         else
             π += get_π_equivalent(network, f_bus, t_bus)
+			if  !isempty(aggregators)
+				for (field, columns) in aggregators
+					for (column, data) in columns
+						aggregators[field][column] += get_branch_data(network, field, column, f_bus, t_bus)
+					end
+				end
+			end
         end
         index += 1
     end

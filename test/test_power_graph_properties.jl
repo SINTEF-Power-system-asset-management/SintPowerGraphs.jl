@@ -27,4 +27,5 @@ test_3_bus = PowerGraph("cases/bus_3.toml")
 	@test is_switch(test, 4, 7)
 	@test ~is_switch(test, 4, 9)
 	@test ~is_indicator(test, 4, 7)
+	@test get_branch_data(test, :reldata, :fault_rate, 1, 2) == 0.01
 end

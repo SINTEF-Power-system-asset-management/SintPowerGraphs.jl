@@ -9,6 +9,8 @@ mutable struct Case
     gen::DataFrame
 	switch::DataFrame
 	indicator::DataFrame
+	reldata::DataFrame
+	loaddata::DataFrame
 end
 
 function Case()::Case
@@ -18,10 +20,11 @@ function Case()::Case
     gen = DataFrame()
 	switch = DataFrame()
 	indicator = DataFrame()
-    Case(baseMVA, bus, branch, gen, switch, indicator)
+	reldata = DataFrame()
+	loaddata = DataFrame()
+    Case(baseMVA, bus, branch, gen, switch, indicator, reldata, loaddata)
 end
     
-
 function Case(fname::String)::Case
 	mpc = Case()
 	conf = TOML.parsefile(fname)
@@ -48,6 +51,10 @@ function push_branch!(mpc::Case, f_bus::Int, t_bus::Int, branch::DataFrameRow)
 	push_branch_type!(mpc.branch, f_bus, t_bus, branch)
 end
 
+function push_branch!(mpc::Case, type::Symbol, f_bus::Int, t_bus::Int, data::DataFrameRow)
+	push_branch_type!(getfield(mpc, type), f_bus, t_bus, data)
+end
+
 function push_indicator!(mpc::Case, f_bus::Int, t_bus::Int, branch::DataFrameRow)
 	push_branch_type!(mpc.indicator, f_bus, t_bus, branch)
 end
@@ -60,12 +67,20 @@ function push_gen!(mpc::Case, gen::DataFrameRow)
     push!(mpc.gen, gen)
 end
 
+function push_loaddata!(mpc::Case, load::DataFrameRow)
+    push!(mpc.loaddata, load)
+end
+
 function get_bus(mpc::Case, ID::Int)::DataFrameRow
     return mpc.bus[ID, :]
 end
 
 function get_bus!(mpc::Case, ID::Int)::DataFrameRow
     return mpc.bus[ID, !]
+end
+
+function get_loaddata(mpc::Case, bus_id::Int)::DataFrame
+    return mpc.loaddata[mpc.loaddata.bus.==bus_id,:]
 end
 
 function get_gen(mpc::Case, bus_id::Int)::DataFrame
@@ -77,8 +92,13 @@ function get_gen!(mpc::Case, bus_id::Int)::DataFrame
 end
 
 function get_branch_type(branch::DataFrame, f_bus::Int, t_bus::Int)::DataFrame
-    return branch[(branch.f_bus .== f_bus) .&
+    temp = branch[(branch.f_bus .== f_bus) .&
                       (branch.t_bus .== t_bus),:]
+	if isempty(temp)
+		temp = branch[(branch.t_bus .== f_bus) .&
+               (branch.f_bus .== t_bus),:]
+		   end
+   return temp
 end
 
 function get_branch(mpc::Case, f_bus::Int, t_bus::Int)::DataFrame
@@ -95,6 +115,14 @@ end
 
 function get_branch(mpc::Case, id::Int)::DataFrameRow
     return mpc.branch[id,:]
+end
+
+function get_branch_data(mpc::Case, type::Symbol, f_bus::Int, t_bus::Int)::DataFrameRow
+	get_branch_type(getfield(mpc, type), f_bus, t_bus)[1,:]
+end
+
+function get_branch_data(mpc::Case, type::Symbol, column::Symbol, f_bus::Int, t_bus::Int)
+	get_branch_data(mpc, type, f_bus, t_bus)[column]
 end
 
 function set_branch_type(branch::DataFrame, f_bus::Int, t_bus::Int, data::DataFrame)

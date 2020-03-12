@@ -13,16 +13,19 @@ add_edge!(test_red_graph, 3, 4)
 add_edge!(test_red_graph, 3, 5)
 add_edge!(test_red_graph, 5, 6)
     
-red_net = merge_line_segments(test)
+red_net = merge_line_segments(test,
+							  aggregators = Dict(:reldata => Dict(:fault_rate => 0.0)))
 
 @testset "Check line merging" begin
     @test test_red_graph == red_net.radial
     @test test_red_graph != test.radial
     @test red_net.mpc.bus[red_net.mpc.bus.ID .==6,:] == test.mpc.bus[test.mpc.bus.ID .==6,:]
     @test is_load_bus(red_net, 6)
+    @test is_gen_bus(red_net, 2)
     # The next test is sketchy since the bus does not end up where I expect it to be
     @test get_π_equivalent(red_net, 3, 4) == (get_π_equivalent(test, 3, 5)+get_π_equivalent(test,5,6))
 	@test is_switch(red_net, 5, 6)
+	@test 0.01 + 0.01 == get_branch_data(red_net, :reldata, :fault_rate, 3, 4)
 end
 
 test_no_zero = DiGraph(4)

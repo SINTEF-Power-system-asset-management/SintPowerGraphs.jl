@@ -27,6 +27,10 @@ function get_gen_data(network::PowerGraphBase, bus_id::Int)::DataFrame
     return get_gen(network.mpc, bus_id)
 end
 
+function get_loaddata(network::PowerGraphBase, bus_id::Int)::DataFrame
+    return get_loaddata(network.mpc, bus_id)
+end
+
 function push_bus!(network::PowerGraphBase, data::DataFrameRow)
     add_vertex!(network.G)
     push_bus!(network.mpc, data)
@@ -53,6 +57,21 @@ function push_gen!(network::PowerGraphBase, data::DataFrameRow, bus::Int)
     push_gen!(network, data)
 end
 
+function push_loaddata!(network::PowerGraphBase, data::DataFrameRow)
+    push_loaddata!(network.mpc, data)
+end
+
+function push_loaddata!(network::PowerGraphBase, data::DataFrameRow, bus::Int)
+    data[:bus] = bus
+    push_loaddata!(network, data)
+end
+
+function push_loaddata!(network::PowerGraphBase, data::DataFrame, bus::Int)
+    for load in eachrow(data)
+        push_loaddata!(network, load, bus)
+    end
+end
+
 function push_branch!(network::PowerGraphBase, f_bus::Int, t_bus::Int, data::DataFrameRow)
 	push_branch!(network.mpc, f_bus, t_bus, data)
     add_edge!(network.G, f_bus, t_bus)
@@ -72,6 +91,10 @@ function push_branch!(network::PowerGraphBase, f_bus::Int, t_bus::Int, data::Dat
     end
 end
 
+function push_branch!(network::PowerGraphBase, type::Symbol, f_bus::Int, t_bus::Int, data::DataFrameRow)
+	push_branch!(network.mpc, type, f_bus, t_bus, data)
+end
+
 """ 
     get_branch_data(network::PowerGraphBase, f_bus_id::Int, t_bus::Int)
 
@@ -84,6 +107,22 @@ function get_branch_data(network::PowerGraphBase, f_bus::Int, t_bus::Int)::DataF
         return get_branch(network.mpc, t_bus, f_bus)
     end
 end
+
+function get_branch_data(network::PowerGraphBase, type::Symbol, f_bus::Int,
+						 t_bus::Int)::DataFrameRow
+	get_branch_data(network.mpc, type, f_bus, t_bus)
+end
+
+function get_branch_data(network::PowerGraphBase, type::Symbol, column::Symbol, f_bus::Int,
+						 t_bus::Int)
+	get_branch_data(network.mpc, type, column, f_bus, t_bus)
+end
+
+function set_branch_data!(network::PowerGraphBase, type::Symbol, column::Symbol, f_bus::Int, t_bus::Int, data)
+	set_branch_data(network.mpc, type, column, f_bus, t_bus, data)
+end
+
+
 
 function get_switch_data(network::PowerGraphBase, f_bus::Int, t_bus::Int)::DataFrame
 	get_switch(network.mpc, f_bus, t_bus)
