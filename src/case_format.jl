@@ -11,6 +11,7 @@ mutable struct Case
 	indicator::DataFrame
 	reldata::DataFrame
 	loaddata::DataFrame
+	transformer::DataFrame
 end
 
 function Case()::Case
@@ -22,7 +23,8 @@ function Case()::Case
 	indicator = DataFrame()
 	reldata = DataFrame()
 	loaddata = DataFrame()
-    Case(baseMVA, bus, branch, gen, switch, indicator, reldata, loaddata)
+	transformer = DataFrame()
+    Case(baseMVA, bus, branch, gen, switch, indicator, reldata, loaddata, transformer)
 end
     
 function Case(fname::String)::Case
@@ -61,6 +63,10 @@ end
 
 function push_switch!(mpc::Case, f_bus::Int, t_bus::Int, branch::DataFrameRow)
 	push_branch_type!(mpc.switch, f_bus, t_bus, branch)
+end
+
+function push_transformer!(mpc::Case, f_bus::Int, t_bus::Int, transformer::DataFrameRow)
+	push_branch_type!(mpc.transformer, f_bus, t_bus, transformer)
 end
     
 function push_gen!(mpc::Case, gen::DataFrameRow)
@@ -113,6 +119,10 @@ function get_indicator(mpc::Case, f_bus::Int, t_bus::Int)::DataFrame
 	get_branch_type(mpc.indicator, f_bus, t_bus)
 end
 
+function get_transformer(mpc::Case, f_bus::Int, t_bus::Int)::DataFrame
+	get_branch_type(mpc.transformer, f_bus, t_bus)
+end
+
 function get_branch(mpc::Case, id::Int)::DataFrameRow
     return mpc.branch[id,:]
 end
@@ -122,7 +132,18 @@ function get_branch_data(mpc::Case, type::Symbol, f_bus::Int, t_bus::Int)::DataF
 end
 
 function get_branch_data(mpc::Case, type::Symbol, column::Symbol, f_bus::Int, t_bus::Int)
+
 	get_branch_data(mpc, type, f_bus, t_bus)[column]
+end
+
+function is_branch_type_in_case(df::DataFrame, f_bus::Int, t_bus)
+	(any((df.f_bus .== f_bus) .& (df.t_bus .== t_bus)) ||
+	 any((df.t_bus .== f_bus) .& (df.f_bus .== t_bus)))
+end
+
+function is_branch_type_in_case(mpc::Case, type::Symbol, f_bus::Int,
+								 t_bus::Int)
+	is_branch_type_in_case(getfield(mpc, type), f_bus, t_bus)
 end
 
 function set_branch_type(branch::DataFrame, f_bus::Int, t_bus::Int, data::DataFrame)
@@ -132,6 +153,16 @@ end
 
 function set_branch!(mpc::Case, f_bus::Int, t_bus::Int, data::DataFrame)
 	set_branch_type(mpc.branch, f_bus, t_bus, data)
+end
+
+function set_branch_data(df::DataFrame, column::Symbol, f_bus::Int, t_bus::Int, data)
+	df[(df.f_bus .== f_bus) .& (df.t_bus .== t_bus) .|
+	  (df.f_bus .== t_bus) .& (df.t_bus .== f_bus), column] .= data
+end
+
+function set_branch_data!(mpc::Case, type::Symbol, column::Symbol, f_bus::Int, t_bus::Int,
+				 data)
+set_branch_data(getfield(mpc, type), column, f_bus, t_bus, data)
 end
 
 function set_switch!(mpc::Case, f_bus::Int, t_bus::Int, data::DataFrame)
@@ -144,10 +175,6 @@ end
 
 function is_gen_bus(mpc::Case, bus_id::Int)::Bool
     return bus_id in mpc.gen.bus
-end
-
-function is_switch_or_indicator(df::DataFrame, f_bus::Int, t_bus::Int)::Bool
-	any((df.f_bus .== f_bus) .& (df.t_bus .== t_bus))
 end
 
 function is_neighbor_switch_or_indicator(df::DataFrame, f_bus::Int, t_bus::Int)::Bool
@@ -168,11 +195,15 @@ function is_neighbor_indicator(mpc::Case, f_bus::Int, t_bus)
 end
 
 function is_switch(mpc::Case, f_bus::Int, t_bus::Int)::Bool
-	nrow(mpc.switch) > 0 && is_switch_or_indicator(mpc.switch, f_bus, t_bus)
+	nrow(mpc.switch) > 0 && is_branch_type_in_case(mpc.switch, f_bus, t_bus)
 end
 
 function is_indicator(mpc::Case, f_bus::Int, t_bus::Int)::Bool
-	nrow(mpc.indicator) > 0 && is_switch_or_indicator(mpc.indicator, f_bus, t_bus)
+	nrow(mpc.indicator) > 0 && is_branch_type_in_case(mpc.indicator, f_bus, t_bus)
+end
+
+function is_transformer(mpc::Case, f_bus::Int, t_bus::Int)::Bool
+	nrow(mpc.transformer) > 0 && is_branch_type_in_case(mpc.transformer, f_bus, t_bus)
 end
 
 function delete_branch!(mpc::Case, f_bus::Int, t_bus::Int)

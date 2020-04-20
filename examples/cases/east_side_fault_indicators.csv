@@ -1,4 +1,0 @@
-name,description,f,t,fault_probability
-F1,NS5252.1,738,432,0.1
-F2,NS6441.1,524,1120,0.1
-F3,NS5493.2,206,117,0.1

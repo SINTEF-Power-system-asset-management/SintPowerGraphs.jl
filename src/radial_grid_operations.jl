@@ -23,6 +23,7 @@ function merge_line_segments(network::RadialPowerGraph;
 							keep_switches::Bool=true,
 							keep_indicators::Bool=true,
 							keep_loaddata::Bool=true,
+							keep_transformers::Bool=true,
 							aggregators::Dict{Symbol, Dict{Symbol, Float64}}=Dict{Symbol, Dict{Symbol, Float64}}())
 	red_net = RadialPowerGraph()
     red_net.ref_bus = 1
@@ -73,7 +74,7 @@ function merge_line_segments(network::RadialPowerGraph;
 
         neighbor_count = length(neighbors(network.radial, t_bus))
         # Check if the we have reached a load, generator, intersection or end of radial
-		if is_gen_bus(network, t_bus) || is_load_bus(network, t_bus) || neighbor_count != 1 || (keep_switches && is_switch(network, f_bus, t_bus)) || (keep_indicators && is_indicator(network, f_bus, t_bus)) || (keep_switches && is_neighbor_switch(network, f_bus, t_bus)) || (keep_indicators && is_neighbor_indicator(network, f_bus, t_bus))
+		if is_gen_bus(network, t_bus) || is_load_bus(network, t_bus) || neighbor_count != 1 || (keep_switches && is_switch(network, f_bus, t_bus)) || (keep_indicators && is_indicator(network, f_bus, t_bus)) || (keep_switches && is_neighbor_switch(network, f_bus, t_bus)) || (keep_indicators && is_neighbor_indicator(network, f_bus, t_bus)) || (keep_transformers && is_transformer(network, f_bus, t_bus))
             n_vertices += 1
             n_edges += 1
             # add the bus and the line
@@ -85,27 +86,44 @@ function merge_line_segments(network::RadialPowerGraph;
             
             # This can probably be fixed more elegantly using metaprogramming
             if is_gen_bus(network, t_bus)
-                temp = get_gen_data(network, t_bus)
+				temp = deepcopy(get_gen_data(network, t_bus))
                 push_gen!(red_net, temp, n_vertices) 
             end
 			if !isempty(aggregators)
 				for (field, columns) in aggregators
 					for (column, data) in columns
-						temp = get_branch_data(network,
-											   field,
-											   f_bus,
-											   t_bus)
-						temp[column] = aggregators[field][column]+get_branch_data(network, field, column, f_bus, t_bus)
-						push_branch!(red_net,
-									 field,
-									 bus_map[from_bus],
-									 n_vertices,
-									 temp)
+						if is_branch_type_in_graph(network, field, f_bus, t_bus)
+							agg = aggregators[field][column]+get_branch_data(network, field, column, f_bus, t_bus)
+						else
+							agg = aggregators[field][column]
+						end
+							if isempty(getfield(red_net.mpc, field)) || !is_branch_type_in_graph(red_net, field, bus_map[from_bus], n_vertices)
+								if is_branch_type_in_graph(network, field, f_bus, t_bus)
+								temp = deepcopy(get_branch_data(network,
+													   field,
+													   f_bus,
+													   t_bus))
+								temp[column] = agg
+									push_branch!(red_net,
+												 field,
+												 bus_map[from_bus],
+												 n_vertices,
+												 temp)
+								end
+							else
+								set_branch_data!(red_net,
+												field,
+												column,
+												bus_map[from_bus],
+												n_vertices,
+												agg)
+						end
 						aggregators[field][column] = 0.0
+
 					end
 				end
 			end
-            branch = get_branch_data(network, f_bus, t_bus)
+			branch = deepcopy(get_branch_data(network, f_bus, t_bus))
             push_branch!(red_net, bus_map[from_bus], n_vertices, branch)
             
             π += get_π_equivalent(network, f_bus, t_bus)
@@ -120,17 +138,25 @@ function merge_line_segments(network::RadialPowerGraph;
 				push_switch!(red_net,
 							 bus_map[from_bus],
 							 n_vertices,
-							get_switch_data(network,
+							deepcopy(get_switch_data(network,
 											f_bus,
-											t_bus)[1,:])
+											t_bus)[1,:]))
 			end
 			if keep_indicators && is_indicator(network, f_bus, t_bus)
 				push_indicator!(red_net,
 								bus_map[from_bus],
 								n_vertices,
-								get_indicator_data(network,
+								deepcopy(get_indicator_data(network,
 												f_bus,
-												t_bus)[1,:])
+												t_bus)[1,:]))
+			end
+			if keep_transformers && is_transformer(network, f_bus, t_bus)
+				push_transformer!(red_net,
+								bus_map[from_bus],
+								n_vertices,
+								deepcopy(get_transformer_data(network,
+												f_bus,
+												t_bus)[1,:]))
 			end
 
             bus_map[t_bus] = n_vertices

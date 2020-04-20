@@ -85,6 +85,10 @@ function push_indicator!(network::PowerGraphBase, f_bus::Int, t_bus::Int, data::
 	push_indicator!(network.mpc, f_bus, t_bus, data)
 end
 
+function push_transformer!(network::PowerGraphBase, f_bus::Int, t_bus::Int, data::DataFrameRow)
+	push_transformer!(network.mpc, f_bus, t_bus, data)
+end
+
 function push_branch!(network::PowerGraphBase, f_bus::Int, t_bus::Int, data::DataFrame)
     for branch in eachrow(data)
         push_branch!(network, f_bus, t_bus, branch)
@@ -118,11 +122,14 @@ function get_branch_data(network::PowerGraphBase, type::Symbol, column::Symbol, 
 	get_branch_data(network.mpc, type, column, f_bus, t_bus)
 end
 
-function set_branch_data!(network::PowerGraphBase, type::Symbol, column::Symbol, f_bus::Int, t_bus::Int, data)
-	set_branch_data(network.mpc, type, column, f_bus, t_bus, data)
+function is_branch_type_in_graph(network::PowerGraphBase, type::Symbol, f_bus::Int,
+								 t_bus::Int)
+	is_branch_type_in_case(network.mpc, type, f_bus, t_bus)
 end
 
-
+function set_branch_data!(network::PowerGraphBase, type::Symbol, column::Symbol, f_bus::Int, t_bus::Int, data)
+	set_branch_data!(network.mpc, type, column, f_bus, t_bus, data)
+end
 
 function get_switch_data(network::PowerGraphBase, f_bus::Int, t_bus::Int)::DataFrame
 	get_switch(network.mpc, f_bus, t_bus)
@@ -130,6 +137,10 @@ end
 
 function get_indicator_data(network::PowerGraphBase, f_bus::Int, t_bus::Int)::DataFrame
 	get_indicator(network.mpc, f_bus, t_bus)
+end
+
+function get_transformer_data(network::PowerGraphBase, f_bus::Int, t_bus::Int)::DataFrame
+	get_transformer(network.mpc, f_bus, t_bus)
 end
 
 function set_branch_data!(network::PowerGraphBase, f_bus::Int, t_bus::Int, data::DataFrame)
@@ -168,6 +179,10 @@ end
 
 function is_switch(network::PowerGraphBase, f_bus::Int, t_bus::Int)
 	is_switch(network.mpc, f_bus, t_bus)
+end
+
+function is_transformer(network::PowerGraphBase, f_bus::Int, t_bus::Int)
+	is_transformer(network.mpc, f_bus, t_bus)
 end
 
 function is_neighbor_switch(network::PowerGraphBase, f_bus::Int, t_bus::Int)
