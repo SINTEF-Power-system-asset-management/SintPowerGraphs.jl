@@ -1,0 +1,4 @@
+name,description,f_bus,t_bus,fault_probability
+F1,NS5252.1,206,570,0.1
+F2,NS6441.1,257,937,0.1
+F3,NS5493.2,1128,982,0.1

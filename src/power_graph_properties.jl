@@ -27,6 +27,10 @@ function get_gen_data(network::PowerGraphBase, bus_id::Int)::DataFrame
     return get_gen(network.mpc, bus_id)
 end
 
+function get_loaddata(network::PowerGraphBase, bus_id::Int)::DataFrame
+    return get_loaddata(network.mpc, bus_id)
+end
+
 function push_bus!(network::PowerGraphBase, data::DataFrameRow)
     add_vertex!(network.G)
     push_bus!(network.mpc, data)
@@ -53,17 +57,46 @@ function push_gen!(network::PowerGraphBase, data::DataFrameRow, bus::Int)
     push_gen!(network, data)
 end
 
+function push_loaddata!(network::PowerGraphBase, data::DataFrameRow)
+    push_loaddata!(network.mpc, data)
+end
+
+function push_loaddata!(network::PowerGraphBase, data::DataFrameRow, bus::Int)
+    data[:bus] = bus
+    push_loaddata!(network, data)
+end
+
+function push_loaddata!(network::PowerGraphBase, data::DataFrame, bus::Int)
+    for load in eachrow(data)
+        push_loaddata!(network, load, bus)
+    end
+end
+
 function push_branch!(network::PowerGraphBase, f_bus::Int, t_bus::Int, data::DataFrameRow)
-    data[:f_bus] = f_bus
-    data[:t_bus] = t_bus
+	push_branch!(network.mpc, f_bus, t_bus, data)
     add_edge!(network.G, f_bus, t_bus)
-    push_branch!(network.mpc, data) 
+end
+
+function push_switch!(network::PowerGraphBase, f_bus::Int, t_bus::Int, data::DataFrameRow)
+	push_switch!(network.mpc, f_bus, t_bus, data)
+end
+
+function push_indicator!(network::PowerGraphBase, f_bus::Int, t_bus::Int, data::DataFrameRow)
+	push_indicator!(network.mpc, f_bus, t_bus, data)
+end
+
+function push_transformer!(network::PowerGraphBase, f_bus::Int, t_bus::Int, data::DataFrameRow)
+	push_transformer!(network.mpc, f_bus, t_bus, data)
 end
 
 function push_branch!(network::PowerGraphBase, f_bus::Int, t_bus::Int, data::DataFrame)
     for branch in eachrow(data)
         push_branch!(network, f_bus, t_bus, branch)
     end
+end
+
+function push_branch!(network::PowerGraphBase, type::Symbol, f_bus::Int, t_bus::Int, data::DataFrameRow)
+	push_branch!(network.mpc, type, f_bus, t_bus, data)
 end
 
 """ 
@@ -79,8 +112,47 @@ function get_branch_data(network::PowerGraphBase, f_bus::Int, t_bus::Int)::DataF
     end
 end
 
+function get_branch_data(network::PowerGraphBase, type::Symbol, f_bus::Int,
+						 t_bus::Int)::DataFrameRow
+	get_branch_data(network.mpc, type, f_bus, t_bus)
+end
+
+function get_branch_data(network::PowerGraphBase, type::Symbol, column::Symbol, f_bus::Int,
+						 t_bus::Int)
+	get_branch_data(network.mpc, type, column, f_bus, t_bus)
+end
+
+function is_branch_type_in_graph(network::PowerGraphBase, type::Symbol, f_bus::Int,
+								 t_bus::Int)
+	is_branch_type_in_case(network.mpc, type, f_bus, t_bus)
+end
+
+function set_branch_data!(network::PowerGraphBase, type::Symbol, column::Symbol, f_bus::Int, t_bus::Int, data)
+	set_branch_data!(network.mpc, type, column, f_bus, t_bus, data)
+end
+
+function get_switch_data(network::PowerGraphBase, f_bus::Int, t_bus::Int)::DataFrame
+	get_switch(network.mpc, f_bus, t_bus)
+end
+
+function get_indicator_data(network::PowerGraphBase, f_bus::Int, t_bus::Int)::DataFrame
+	get_indicator(network.mpc, f_bus, t_bus)
+end
+
+function get_transformer_data(network::PowerGraphBase, f_bus::Int, t_bus::Int)::DataFrame
+	get_transformer(network.mpc, f_bus, t_bus)
+end
+
 function set_branch_data!(network::PowerGraphBase, f_bus::Int, t_bus::Int, data::DataFrame)
     set_branch!(network.mpc, f_bus, t_bus, data)
+end
+
+function set_switch_data!(network::PowerGraphBase, f_bus::Int, t_bus::Int, data::DataFrame)
+    set_switch!(network.mpc, f_bus, t_bus, data)
+end
+
+function set_indicator_data!(network::PowerGraphBase, f_bus::Int, t_bus::Int, data::DataFrame)
+    set_indicator!(network.mpc, f_bus, t_bus, data)
 end
 
 """
@@ -99,6 +171,26 @@ end
 """
 function is_gen_bus(network::PowerGraphBase, bus_id::Int)
     return is_gen_bus(network.mpc, bus_id)
+end
+
+function is_indicator(network::PowerGraphBase, f_bus::Int, t_bus::Int)
+	is_indicator(network.mpc, f_bus, t_bus)
+end
+
+function is_switch(network::PowerGraphBase, f_bus::Int, t_bus::Int)
+	is_switch(network.mpc, f_bus, t_bus)
+end
+
+function is_transformer(network::PowerGraphBase, f_bus::Int, t_bus::Int)
+	is_transformer(network.mpc, f_bus, t_bus)
+end
+
+function is_neighbor_switch(network::PowerGraphBase, f_bus::Int, t_bus::Int)
+	is_neighbor_switch(network.mpc, f_bus, t_bus)
+end
+
+function is_neighbor_indicator(network::PowerGraphBase, f_bus::Int, t_bus::Int)
+	is_neighbor_indicator(network.mpc, f_bus, t_bus)
 end
 
 """

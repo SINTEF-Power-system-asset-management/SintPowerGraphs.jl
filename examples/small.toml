@@ -1,0 +1,7 @@
+[files]
+branch = "C:\\Users\\sigurdj\\.julia\\dev\\PowerGraphs.jl\\examples\\small_branch"
+gen = "C:\\Users\\sigurdj\\.julia\\dev\\PowerGraphs.jl\\examples\\small_gen"
+bus = "C:\\Users\\sigurdj\\.julia\\dev\\PowerGraphs.jl\\examples\\small_bus"
+
+[configuration]
+baseMVA = 100.0

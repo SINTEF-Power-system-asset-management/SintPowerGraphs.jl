@@ -2,6 +2,11 @@
 bus = "east_side_bus.csv"
 branch = "east_side_branch.csv"
 gen = "east_side_gen.csv"
+indicator = "east_side_indicators.csv"
+switch = "east_side_switches.csv"
+reldata = "east_side_reldata.csv"
+loaddata = "east_side_loaddata.csv"
+transformer = "east_side_trafo.csv"
 
 [configuration]
 baseMVA = 100.0
