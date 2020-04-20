@@ -12,7 +12,7 @@ A = [1 -1 0;
      1 0 -1;
      0 1 -1]
 
-test_3_bus = PowerGraph("cases/bus_3.toml")
+test_3_bus = PowerGraph(joinpath(@__DIR__, "cases", "bus_3.toml"))
 
 # The object test is from set_up_simple_test_system.jl
 @testset "Get network properties from the graph" begin
