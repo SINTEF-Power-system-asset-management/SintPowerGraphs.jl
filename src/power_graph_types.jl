@@ -47,9 +47,9 @@ function read_case(mpc::Case)
         add_edge!(G, edge)
     end
     ref_bus = NaN
-    for bus in eachrow(mpc.bus)
+	for (index, bus) in enumerate(eachrow(mpc.bus))
         if bus[:type] == 3
-            ref_bus = bus[:ID]
+            ref_bus = index
         end
     end
     return G, ref_bus
