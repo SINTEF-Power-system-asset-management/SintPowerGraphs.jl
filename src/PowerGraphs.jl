@@ -1,7 +1,7 @@
 module PowerGraphs
 
 include("case_format.jl")
-export Case, to_csv, update_ID!
+export Case, to_csv, update_ID!, get_n_buses
 
 include("power_graph_types.jl")
 export RadialPowerGraph, PowerGraph

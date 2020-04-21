@@ -261,3 +261,7 @@ function to_csv(mpc::Case, fname::String)
 	TOML.print(file, conf)
 	close(file)
 end
+
+function get_n_buses(mpc::Case)::Int64
+	nrow(mpc.bus)
+end
