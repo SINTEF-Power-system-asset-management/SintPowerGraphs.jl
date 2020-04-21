@@ -14,6 +14,8 @@ A = [1 -1 0;
 
 test_3_bus = PowerGraph(joinpath(@__DIR__, "cases", "bus_3.toml"))
 
+four_area = PowerGraph(joinpath(@__DIR__, "cases", "4area_network.toml"))
+
 # The object test is from set_up_simple_test_system.jl
 @testset "Get network properties from the graph" begin
     @test get_bus_data(test, 1)[:type] == 3 # Check if the bus is the swing bus
@@ -28,4 +30,5 @@ test_3_bus = PowerGraph(joinpath(@__DIR__, "cases", "bus_3.toml"))
 	@test ~is_switch(test, 4, 9)
 	@test ~is_indicator(test, 4, 7)
 	@test get_branch_data(test, :reldata, :fault_rate, 1, 2) == 0.01
+	@test size(get_incidence_matrix(four_area)) == (30,25)
 end

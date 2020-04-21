@@ -262,6 +262,23 @@ function to_csv(mpc::Case, fname::String)
 	close(file)
 end
 
+
+""" Returns the number of buses in the case."""
 function get_n_buses(mpc::Case)::Int64
 	nrow(mpc.bus)
 end
+
+""" Returns the row number of a bus given by id"""
+function get_bus_row(mpc::Case, id::Int64)::Int64
+	row = findall(mpc.bus.ID .== id)
+	if length(row) == 0
+		error(string("Bus with ID ", repr(id), " not found."))
+	elseif length(row) > 1
+		error(string("Multiple buses with the ID ", repr(id)))
+	else
+		return row[1]
+	end
+end
+
+
+
