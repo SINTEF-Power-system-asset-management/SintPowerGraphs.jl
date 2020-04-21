@@ -34,7 +34,6 @@ test_no_zero = DiGraph(4)
 add_edge!(test_no_zero, 1, 2)
 add_edge!(test_no_zero, 2, 3)
 add_edge!(test_no_zero, 2, 4)
-
 @testset "Check removing of zero impedance lines" begin
 	no_zero = remove_zero_impedance_lines(red_net)
 	@test nv(no_zero.G) == 4

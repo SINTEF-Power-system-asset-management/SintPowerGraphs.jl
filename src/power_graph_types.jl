@@ -39,13 +39,18 @@ function PowerGraph(case_file::String)
     PowerGraph(Case(case_file::String))
 end
 
-function read_case(mpc::Case)
+function read_case(mpc::Case; ignore_id::Bool=false)
     G = DiGraph(nrow(mpc.bus))
-
-    for branch in eachrow(mpc.branch)
-        edge = Edge(branch[:f_bus], branch[:t_bus])
-        add_edge!(G, edge)
-    end
+	
+	for branch in eachrow(mpc.branch)
+		if ignore_id
+			edge = Edge(branch[:f_bus], branch[:t_bus])
+		else
+		edge = Edge(get_bus_row(mpc, branch[:f_bus]),
+					get_bus_row(mpc, branch[:t_bus]))
+		end
+		add_edge!(G, edge)
+	end
     ref_bus = NaN
 	for (index, bus) in enumerate(eachrow(mpc.bus))
         if bus[:type] == 3

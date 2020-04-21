@@ -1,0 +1,7 @@
+[files]
+bus = "4area_network_bus.csv"
+branch = "4area_network_branch.csv"
+gen = "4area_network_gen.csv"
+
+[configuration]
+baseMVA = 100.0

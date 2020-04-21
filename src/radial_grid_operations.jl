@@ -220,6 +220,6 @@ function remove_low_impedance_lines(network_orig::PowerGraphBase, tol::Float64=0
     end
     deleterows!(network.branch, delete_rows)
 
-    G, ref_bus = read_case(network)
+    G, ref_bus = read_case(network, ignore_id = true)
     return PowerGraph(G, network, ref_bus)
 end
