@@ -12,7 +12,15 @@ A = [1 -1 0;
      1 0 -1;
      0 1 -1]
 
+A_4_bus = [1, -1, 0, 0;
+		   1, 0, -1, 0;
+		   0, 1, 0, -1
+		   0, 0, 0, -1;
+		   0, 0, 1, -1;
+		   1, 0, 0, -1]
+
 test_3_bus = PowerGraph(joinpath(@__DIR__, "cases", "bus_3.toml"))
+test_4_bus = PowerGraph(joinpath(@__DIR__, "cases", "bus_4.toml"))
 
 four_area = PowerGraph(joinpath(@__DIR__, "cases", "4area_network.toml"))
 
@@ -24,6 +32,7 @@ four_area = PowerGraph(joinpath(@__DIR__, "cases", "4area_network.toml"))
     @test is_gen_bus(test, 1) # Check if the bus is a load bus
     @test B == Array(get_dc_admittance_matrix(test_3_bus)) 
     @test A == Array(get_incidence_matrix(test_3_bus))
+    @test A_4_bus == Array(get_incidence_matrix(test_4_bus))
     @test n_edges(test_3_bus) == 3
     @test n_vertices(test_3_bus) == 3
 	@test is_switch(test, 4, 7)
