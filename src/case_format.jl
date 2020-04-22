@@ -225,6 +225,19 @@ function get_susceptance_vector(case::Case)::Array{Float64, 1}
     return map(x-> 1/x, case.branch[:,:x])
 end
 
+"""
+    get_incidence_matrix(network::PowerGraphBase)::Array{Float64}
+    Returns the susceptance vector for performing a dc power flow.
+"""
+function get_incidence_matrix(case::Case)::Array{Int64, 2}
+	A = zeros(Int, nrow(case.branch), nrow(case.bus))
+	for (id, branch) in enumerate(eachrow(case.branch))
+		A[id, get_bus_row(case, branch.f_bus)] = 1
+		A[id, get_bus_row(case, branch.t_bus)] = -1
+	end
+	return A
+end
+
 function get_power_injection_vector(case::Case)::Array{Float64, 1}
     Pd = -case.bus[:, :Pd]
     Pg = zeros(length(Pd), 1) 

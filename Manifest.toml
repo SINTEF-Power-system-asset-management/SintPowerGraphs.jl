@@ -587,14 +587,6 @@ version = "0.9.4"
 deps = ["Libdl", "LinearAlgebra", "Serialization", "SparseArrays"]
 uuid = "4607b0f0-06f3-5cda-b6b1-a6196a1729e9"
 
-[[TOML]]
-deps = ["Dates"]
-git-tree-sha1 = "2dbfe34f210980d78f5bb0cd4b0f829ab3e4ceb4"
-repo-rev = "master"
-repo-url = "https://github.com/JuliaLang/TOML.jl"
-uuid = "191fdcea-f9f2-43e0-b922-d33f71e2abc3"
-version = "0.4.0"
-
 [[TableTraits]]
 deps = ["IteratorInterfaceExtensions"]
 git-tree-sha1 = "b1ad568ba658d8cbb3b892ed5380a6f3e781a81e"

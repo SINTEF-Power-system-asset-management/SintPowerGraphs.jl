@@ -1,6 +1,5 @@
 using LightGraphs.LinAlg
 using LinearAlgebra
-using SparseArrays
 """ 
     get_bus_data!(network::PowerGraphBase, bus_id::Int)
 
@@ -219,13 +218,13 @@ end
     get_dc_admittance_matrix(network::PowerGraphBase)::Array{Float64}
     Returns the admittance matrix for performing a dc power flow.
 """
-function get_dc_admittance_matrix(network::PowerGraphBase)::SparseMatrixCSC{Float64, Int64}
+function get_dc_admittance_matrix(network::PowerGraphBase)::Array{Float64, 2}
     A = incidence_matrix(network.G)
-    return A*spdiagm(0 => get_susceptance_vector(network))*A'
+	return A*Diagonal(get_susceptance_vector(network))*A'
 end
 
-function get_incidence_matrix(network::PowerGraphBase)::SparseMatrixCSC{Float64, Int64}
-    return -incidence_matrix(network.G)'
+function get_incidence_matrix(network::PowerGraphBase)::Array{Int64, 2}
+	return get_incidence_matrix(network.mpc)
 end
 
 """
