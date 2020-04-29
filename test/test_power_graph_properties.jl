@@ -39,4 +39,7 @@ four_area = PowerGraph(joinpath(@__DIR__, "cases", "4area_network.toml"))
 	@test ~is_indicator(test, 4, 7)
 	@test get_branch_data(test, :reldata, :fault_rate, 1, 2) == 0.01
 	@test size(get_incidence_matrix(four_area)) == (30,25)
+	take_out_line!(test, 2)
+	@test Array[[1, 2], [3, 4, 5, 6, 7]] == get_islanded_buses(test)
+
 end

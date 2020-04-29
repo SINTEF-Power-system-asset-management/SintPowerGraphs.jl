@@ -264,3 +264,10 @@ end
 function get_line_lims_pu(network::PowerGraphBase)::Array{Float64}
     return get_line_lims_pu(network.mpc)
 end
+
+"""Return list of buses in islands"""
+function get_islanded_buses(network::PowerGraphBase)::Array{Array{Int64,1},1}
+	connected_components(network.G)
+end
+
+
