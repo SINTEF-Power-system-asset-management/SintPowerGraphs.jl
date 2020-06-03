@@ -1,6 +1,6 @@
 using LightGraphs.LinAlg
 using LinearAlgebra
-""" 
+"""
     get_bus_data!(network::PowerGraphBase, bus_id::Int)
 
     Return a DataFrameRow with the bus data.
@@ -9,7 +9,7 @@ function get_bus_data!(network::PowerGraphBase, bus_id::Int)::DataFrameRow
     return get_bus!(network.mpc, bus_id)
 end
 
-""" 
+"""
     get_bus_data(network::PowerGraphBase, bus_id::Int)
 
     Return a copy of the DataFrameRow with the bus data.
@@ -98,12 +98,12 @@ function push_branch!(network::PowerGraphBase, type::Symbol, f_bus::Int, t_bus::
 	push_branch!(network.mpc, type, f_bus, t_bus, data)
 end
 
-""" 
+"""
     get_branch_data(network::PowerGraphBase, f_bus_id::Int, t_bus::Int)
 
     Return a dictionary containing the dictionary with the buse data.
 """
-function get_branch_data(network::PowerGraphBase, f_bus::Int, t_bus::Int)::DataFrame
+function get_branch_data(network::PowerGraphBase, f_bus::Int, t_bus::Int)::DataFrameRow
     if has_edge(network.G, f_bus, t_bus)
         return get_branch(network.mpc, f_bus, t_bus)
     else
@@ -194,7 +194,7 @@ end
 
 """
     get_π_equivalent(network::PowerGraphBase, from_bus::Int, to_bus::Int)
-    
+
     Returns the π-equivalent of a line segment.
 """
 function get_π_equivalent(network::PowerGraphBase, from_bus::Int, to_bus::Int)::π_segment
@@ -205,7 +205,7 @@ function get_π_equivalent(network::PowerGraphBase, from_bus::Int, to_bus::Int):
     elseif nrow(branch) == 0
         return π_segment(0, 0, 0)
     end
-    return get_π_equivalent(branch[1,:])  
+    return get_π_equivalent(branch[1,:])
 end
 
 function get_π_equivalent(branch::DataFrameRow)::π_segment
@@ -269,5 +269,3 @@ end
 function get_islanded_buses(network::PowerGraphBase)::Array{Array{Int64,1},1}
 	connected_components(network.G)
 end
-
-
