@@ -103,7 +103,7 @@ end
 
     Return a dictionary containing the dictionary with the buse data.
 """
-function get_branch_data(network::PowerGraphBase, f_bus::Int, t_bus::Int)::DataFrameRow
+function get_branch_data(network::PowerGraphBase, f_bus::Int, t_bus::Int)::DataFrame
     if has_edge(network.G, f_bus, t_bus)
         return get_branch(network.mpc, f_bus, t_bus)
     else
