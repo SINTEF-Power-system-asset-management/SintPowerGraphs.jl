@@ -28,7 +28,7 @@ function Case()::Case
     gencost = DataFrame()
     Case(baseMVA, bus, branch, gen, switch, indicator, reldata, loaddata, transformer, gencost)
 end
-    
+
 function Case(fname::String)::Case
 	mpc = Case()
 	conf = TOML.parsefile(fname)
@@ -48,7 +48,7 @@ end
 function push_branch_type!(df::DataFrame, f_bus::Int, t_bus::Int, data::DataFrameRow)
     data[:f_bus] = f_bus
     data[:t_bus] = t_bus
-    push!(df, data) 
+    push!(df, data)
 end
 
 function push_branch!(mpc::Case, f_bus::Int, t_bus::Int, branch::DataFrameRow)
@@ -70,7 +70,7 @@ end
 function push_transformer!(mpc::Case, f_bus::Int, t_bus::Int, transformer::DataFrameRow)
 	push_branch_type!(mpc.transformer, f_bus, t_bus, transformer)
 end
-    
+
 function push_gen!(mpc::Case, gen::DataFrameRow)
     push!(mpc.gen, gen)
 end
@@ -138,13 +138,13 @@ function get_branch_data(mpc::Case, type::Symbol, column::Symbol, f_bus::Int, t_
 	get_branch_data(mpc, type, f_bus, t_bus)[column]
 end
 
-function is_branch_type_in_case(df::DataFrame, f_bus::Int, t_bus)
+function is_branch_type_in_case(df::DataFrame, f_bus::Int, t_bus)::Bool
 	(any((df.f_bus .== f_bus) .& (df.t_bus .== t_bus)) ||
 	 any((df.t_bus .== f_bus) .& (df.f_bus .== t_bus)))
 end
 
 function is_branch_type_in_case(mpc::Case, type::Symbol, f_bus::Int,
-								 t_bus::Int)
+								 t_bus::Int)::Bool
 	is_branch_type_in_case(getfield(mpc, type), f_bus, t_bus)
 end
 
@@ -240,8 +240,8 @@ end
 
 function get_power_injection_vector(case::Case)::Array{Float64, 1}
     Pd = -case.bus[:, :Pd]
-    Pg = zeros(length(Pd), 1) 
-    for gen in eachrow(case.gen) 
+    Pg = zeros(length(Pd), 1)
+    for gen in eachrow(case.gen)
         Pg[gen.bus] = gen.Pg
     end
     return Pg[:] + Pd
@@ -266,7 +266,7 @@ function to_csv(mpc::Case, fname::String)
 			file = open(string(fpath, ".csv"), "w")
 			CSV.write(file, df)
 			close(file)
-		else 
+		else
 			conf["configuration"][String(field)] = df
 		end
 	end
@@ -292,6 +292,3 @@ function get_bus_row(mpc::Case, id::Int64)::Int64
 		return row[1]
 	end
 end
-
-
-
