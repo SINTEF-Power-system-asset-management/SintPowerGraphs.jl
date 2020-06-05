@@ -23,9 +23,9 @@ function RadialPowerGraph()
     RadialPowerGraph(G, mpc, ref_bus, radial)
 end
 
-function RadialPowerGraph(case_file::String)
+function RadialPowerGraph(case_file::String; ignore_id::Bool=false)
     mpc = Case(case_file::String)
-    G, ref_bus = read_case(mpc)
+    G, ref_bus = read_case(mpc, ignore_id = ignore_id)
     radial = directed_from_feeder(G, ref_bus)
     RadialPowerGraph(G, mpc, ref_bus, radial)
 end
