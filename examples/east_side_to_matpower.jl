@@ -48,11 +48,18 @@ small = remove_low_impedance_lines(red_example, 1e-5)
 
 # ## Plot the network
 # We will now plot the network, to check that it looks reasonable.
+#
+# There are two nice options for plotting. We can use GraphPlots as demonstrated below.
 
 set_default_plot_size(25cm, 25cm)
 gplot(small.G, nodelabel=1:n_vertices(small), arrowlengthfrac=0)
 
-plotly(alpha=1, size=(1000,800), dpi=80)
+# Another nice option for plotting is to use Plots and GraphRecipes.
+
+gr(alpha=1, size=(700,800), dpi=150)
+# Plotly is a nice backend that allows for interacting with the plot (zoomin, paning, ...). However, it is no
+# supported by GitHub
+# plotly(alpha=1, size=(700,800), dpi=150)
 graphplot(small.G, method=:tree, nodeshape=:circle, names=1:n_vertices(small), curves=false, fontsize=5, self_edge_size=0.5)
 
 # ## Write network to matpower
