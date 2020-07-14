@@ -1,10 +1,16 @@
 # # Aggregate radial network and prepare for MATPOWER
 # In this notebook code for aggregating a radial network and preparing it for power flows is presented.
 #
+# ## Dependencies
+# This example has several dependencies not included in PowerGraphs. To run this example the dependencies should be installed separately. 
+#
+# To be able to run power flows pypsa or pandapower should be installed. They have to be installed on the same Python version as the one used by PyCall. To change the python version used by PyCall, please refer to the PyCall documentation
+#
 # ## Load packages
 # First we need to load the package PowerGraphs for aggregating and saving the grid.
 
 using PowerGraphs
+using PyCall
 using GraphPlot # For plotting
 using Gadfly # For changing plot size
 using Plots, GraphRecipes # For nicer plotting
@@ -62,15 +68,30 @@ gr(alpha=1, size=(700,800), dpi=150)
 # plotly(alpha=1, size=(700,800), dpi=150)
 graphplot(small.G, method=:tree, nodeshape=:circle, names=1:n_vertices(small), curves=false, fontsize=5, self_edge_size=0.5)
 
-# ## Write network to matpower
-# We can now write the network to csv files for later processing in MATLAB
+# ## Running power flow
+# First we have to name the buses correctly
 
-# +
-## Prepare to write case to FaSad
 mpc = deepcopy(small.mpc)
 mpc.bus.ID = 1:n_vertices(small)
 
-to_csv(mpc, joinpath(@__DIR__, "reduced_matpower"))
+# We can now run the power flow using pypsa
+
+pypsa = pyimport("pypsa")
+network = pypsa.Network()
+ppc = to_ppc(mpc)
+network.import_from_pypower_ppc(ppc)
+network.pf()
+print(network.lines_t["p0"])
+
+# It should also be possible to run the power flow using pandapower, but this is commented out for now.
+
+# +
+#pp = pyimport("pandapower")
+#case = pp.converter.from_ppc(to_ppc(mpc))
+#pp.runpp(case)
 # -
 
+# ## Write network to matpower
+# We can now write the network to csv files for later processing in MATLAB
 
+to_csv(mpc, joinpath(@__DIR__, "reduced_matpower"))
