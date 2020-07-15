@@ -275,6 +275,17 @@ function to_csv(mpc::Case, fname::String)
 	close(file)
 end
 
+""" Convert the case to the PYPOWER Case format."""
+function to_ppc(mpc::Case)::Dict{String, Any}
+	case = Dict{String, Any}()
+	case["bus"] = convert(Array{Float64, 2}, mpc.bus)
+	case["gen"] = hcat(convert(Array{Float64, 2}, mpc.gen), zeros(nrow(mpc.gen), 8))
+	case["branch"] = convert(Array{Float64, 2}, mpc.branch)
+	case["baseMVA"] = mpc.baseMVA
+	case["version"] = 2
+
+	return case
+end
 
 """ Returns the number of buses in the case."""
 function get_n_buses(mpc::Case)::Int64
