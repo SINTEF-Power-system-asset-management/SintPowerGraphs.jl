@@ -83,15 +83,11 @@ network.import_from_pypower_ppc(ppc)
 network.pf()
 print(network.lines_t["p0"])
 
-# It should also be possible to run the power flow using pandapower, but this is commented out for now.
-
-# +
-#pp = pyimport("pandapower")
-#case = pp.converter.from_ppc(to_ppc(mpc))
-#pp.runpp(case)
-# -
+# It should also be possible to run the power flow using pandapower, but we didn't manage to make it work using PyCall. To use pandapower the easiest is to pickle the variabl `ppc` and load it in Python.
 
 # ## Write network to matpower
 # We can now write the network to csv files for later processing in MATLAB
 
 to_csv(mpc, joinpath(@__DIR__, "reduced_matpower"))
+
+
