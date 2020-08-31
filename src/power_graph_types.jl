@@ -1,4 +1,5 @@
 using LightGraphs
+using MetaGraphs
 
 abstract type PowerGraphBase end
 
@@ -9,10 +10,24 @@ mutable struct RadialPowerGraph <: PowerGraphBase
     radial::DiGraph # The graph directed from the transmission node
 end
 
+mutable struct MetaPowerGraph <: PowerGraphBase
+    G::DiGraph # graph containing the power network 
+    mpc::Case
+    ref_bus::Int # The id of the reference bus
+    meta::MetaGraph # MetaGraph with bus names and switch status stored as property
+end
+
 mutable struct PowerGraph <: PowerGraphBase
     G::DiGraph
     mpc::Case
     ref_bus::Int
+end
+
+function MetaPowerGraph(case_file::String)
+    mpc = Case(case_file::String)
+    G, ref_bus = read_case(mpc)
+    meta = graphMap(mpc, G)
+    MetaPowerGraph(G, mpc, ref_bus, meta)
 end
 
 function RadialPowerGraph()
