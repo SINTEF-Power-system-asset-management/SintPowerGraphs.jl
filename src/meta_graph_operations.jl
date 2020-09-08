@@ -75,7 +75,8 @@ function subgraph(g::MetaGraph, start::Int = 0)::MetaDiGraph
     end
 
     for e in edges(g)
-        src, tar = get(reindex, e.src, nothing), get(reindex, e.dst, nothing)
+        # I sort src and tar for keeping the order of discovery in DFS
+        src, tar = sort([get(reindex, e.src, nothing), get(reindex, e.dst, nothing)])
         if !(nothing in [src, tar])
             if get_prop(g, e, :switch) != 0 # I add the edge only if switches are closed (original configuration analyzed)
                 add_edge!(newgraph, src, tar)
