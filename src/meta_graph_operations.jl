@@ -1,4 +1,4 @@
-function graphMap(mpc, G) #network::RadialPowerGraph)
+function graphMap(mpc, G, ref_bus) #network::RadialPowerGraph)
     mg = MetaGraph(G)
     for bus in eachrow(mpc.bus)
         set_prop!(mg, DataFrames.row(bus), :name, string(bus.ID))
@@ -25,10 +25,10 @@ function graphMap(mpc, G) #network::RadialPowerGraph)
             set_prop!(mg, mg[string(branch.f_bus),:name], mg[string(branch.t_bus),:name], :switch, -1)
         end
     end
-    meta_radial = Dict{String, MetaDiGraph}()
-    for f in eachrow(mpc.transformer)
-        push!(meta_radial, string(f.t_bus) => subgraph(mg, mg[string(f.t_bus), :name]))
-    end
+    meta_radial = subgraph(mg, ref_bus)
+    # for f in eachrow(mpc.transformer)
+    #     push!(meta_radial, string(f.t_bus) => subgraph(mg, mg[string(f.t_bus), :name]))
+    # end
     return mg, meta_radial
 end
 
@@ -43,7 +43,7 @@ function traverse(g::MetaGraph, start::Int = 0, dfs::Bool = true)::Vector{Int}
     # start = start == 0 ? root(g) : start
     seen = Vector{Int}()
     visit = Vector{Int}([start])
-    @assert start in vertices(g) "can't access $start in $(props(g, 1))"
+    # @assert start in vertices(g) "can't access $start in $(props(g, 1))"
     while !isempty(visit)
         next = pop!(visit)
         if !(next in seen)
@@ -77,7 +77,7 @@ function subgraph(g::MetaGraph, start::Int = 0)::MetaDiGraph
     for e in edges(g)
         src, tar = get(reindex, e.src, nothing), get(reindex, e.dst, nothing)
         if !(nothing in [src, tar])
-            if get_prop(g, e, :switch) != 0
+            if get_prop(g, e, :switch) != 0 # I add the edge only if switches are closed (original configuration analyzed)
                 add_edge!(newgraph, src, tar)
                 set_prop!(newgraph, src, tar, :switch, get_prop(g, e.src, e.dst, :switch))
             end

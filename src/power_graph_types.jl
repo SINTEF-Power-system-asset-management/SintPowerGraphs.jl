@@ -15,7 +15,7 @@ mutable struct MetaPowerGraph <: PowerGraphBase
     mpc::Case
     ref_bus::Int # The id of the reference bus
     meta::MetaGraph # MetaGraph with bus names and switch status stored as property
-    meta_radial::Dict{String, MetaDiGraph}
+    meta_radial::MetaDiGraph # Here the original radial topology is stored
 end
 
 mutable struct PowerGraph <: PowerGraphBase
@@ -27,7 +27,7 @@ end
 function MetaPowerGraph(case_file::String)
     mpc = Case(case_file::String)
     G, ref_bus = read_case(mpc)
-    meta, meta_radial = graphMap(mpc, G)
+    meta, meta_radial = graphMap(mpc, G, ref_bus)
     MetaPowerGraph(G, mpc, ref_bus, meta, meta_radial)
 end
 
