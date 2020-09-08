@@ -25,7 +25,7 @@ function graphMap(mpc, G, ref_bus) #network::RadialPowerGraph)
             set_prop!(mg, mg[string(branch.f_bus),:name], mg[string(branch.t_bus),:name], :switch, -1)
         end
     end
-    meta_radial = subgraph(mg, mg[string(ref_bus), :name])
+    meta_radial = subgraph(mg, ref_bus)
     # for f in eachrow(mpc.transformer)
     #     push!(meta_radial, string(f.t_bus) => subgraph(mg, mg[string(f.t_bus), :name]))
     # end
