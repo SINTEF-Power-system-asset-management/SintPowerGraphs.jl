@@ -62,13 +62,13 @@ end
 function subgraph(g::MetaGraph, start::Int = 0)::MetaDiGraph
     # start = start == 0 ? root(g) : start
 
-    inds = traverse(g, start)
+    inds = traverse(g, start, false)
     newgraph = MetaDiGraph()
     set_indexing_prop!(newgraph, :name)
     set_prop!(newgraph, :root, 1)
     reindex = Dict{Int,Int}()
 
-    for (newi, i) in enumerate(inds)  # in DFS order
+    for (newi, i) in enumerate(inds)  # in BFS order
         add_vertex!(newgraph)
         set_prop!(newgraph, newi, :name, get_prop(g, i, :name))
         reindex[i] = newi
