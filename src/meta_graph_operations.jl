@@ -44,11 +44,11 @@ function traverse(g::MetaGraph, start::Int = 0, dfs::Bool = true)::Vector{Int}
     
     seen = Vector{Int}()
     visit = Vector{Int}([start])
-    @assert start in vertices(g_copy) "can't access $start in $(props(g, 1))"
+    @assert start in vertices(g) "can't access $start in $(props(g, 1))"
     while !isempty(visit)
         next = pop!(visit)
         if !(next in seen)
-            for n in neighbors(g_copy, next)
+            for n in neighbors(g, next)
                 if !(n in seen)
                     if dfs append!(visit, n) else insert!(visit, 1, n) end
                 end
@@ -65,7 +65,7 @@ function subgraph(g::MetaGraph, start::Int = 0)::MetaDiGraph
 
     # removing open switch edges before traversing with BFS
     g_copy = copy(g)
-    open_switches_iter = filter_edges(network.meta, (g,x)->(get_prop(g, x, :switch) == 0))
+    open_switches_iter = filter_edges(g, (g,x)->(get_prop(g, x, :switch) == 0))
     for e in open_switches_iter
         rem_edge!(g_copy, e)
     end
