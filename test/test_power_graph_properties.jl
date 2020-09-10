@@ -17,11 +17,27 @@ A_4_bus = [1 -1 0 0;
 		   0 1 0 -1;
 		   0 0 1 -1;
 		   1 0 0 -1]
+	
+A_island_test = [0 -1 0 0 1 0;
+				 1 0 -1 0 0 0;
+				 0 0 -1 0 0 1;
+				 0 0 0 1 -1 0;
+				 0 -1 0 1 0 0;
+				 1 0 0 0 0 -1]
+
+A_island_bd = [1 -1 0 0 0 0;
+			   1 0 -1 0 0 0;
+			   0 1 -1 0 0 0;
+			   0 0 0 1 -1 0;
+			   0 0 0 1 0 -1;
+			   0 0 0 0 1 -1]
 
 test_3_bus = PowerGraph(joinpath(@__DIR__, "cases", "bus_3.toml"))
 test_4_bus = PowerGraph(joinpath(@__DIR__, "cases", "bus_4.toml"))
 
 four_area = PowerGraph(joinpath(@__DIR__, "cases", "4area_network.toml"))
+
+test_island = PowerGraph(joinpath(@__DIR__, "cases", "island_test.toml"))
 
 # The object test is from set_up_simple_test_system.jl
 @testset "Get network properties from the graph" begin
@@ -41,5 +57,10 @@ four_area = PowerGraph(joinpath(@__DIR__, "cases", "4area_network.toml"))
 	@test size(get_incidence_matrix(four_area)) == (30,25)
 	take_out_line!(test, 2)
 	@test Array[[1, 2], [3, 4, 5, 6, 7]] == get_islanded_buses(test)
+
+	take_out_line!(test_island, 4)
+	@test A_island_test == get_incidence_matrix(test_island, true)
+	A_bd, bus_mapping, branch_mapping = get_island_incidence_matrix(test_island)
+	@test A_island_bd == A_bd
 
 end
