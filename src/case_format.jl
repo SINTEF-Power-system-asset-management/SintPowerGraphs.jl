@@ -238,6 +238,18 @@ function get_incidence_matrix(case::Case)::Array{Int64, 2}
 	return A
 end
 
+"""
+    get_incidence_matrix(network::PowerGraphBase)::Array{Float64}
+    Returns the susceptance vector for performing a dc power flow.
+"""
+function get_incidence_matrix(case::Case, consider_status::Bool)::Array{Int64, 2}
+	if consider_status
+		return get_incidence_matrix(case)[case.branch[:, :status], :]
+	else
+		return get_incidence_matrix(case)
+	end
+end
+
 function get_power_injection_vector(case::Case)::Array{Float64, 1}
     Pd = -case.bus[:, :Pd]
     Pg = zeros(length(Pd), 1)
@@ -303,3 +315,17 @@ function get_bus_row(mpc::Case, id::Int64)::Int64
 		return row[1]
 	end
 end
+
+""" Sets branch to out of service"""
+function take_out_line!(mpc::Case, id::Int)
+	if !(:status in names(mpc.branch))
+		 mpc.branch[!, :status] .= true
+	 end
+	mpc.branch[id, :status] = false
+end
+
+""" Sets branch to out of service"""
+function put_back_line!(mpc::Case, id::Int)
+	mpc.branch[id, :status] = true
+end
+

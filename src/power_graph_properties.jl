@@ -227,6 +227,10 @@ function get_incidence_matrix(network::PowerGraphBase)::Array{Int64, 2}
 	return get_incidence_matrix(network.mpc)
 end
 
+function get_incidence_matrix(network::PowerGraphBase, consider_status::Bool)::Array{Int64, 2}
+	return get_incidence_matrix(network.mpc, consider_status)
+end
+
 """
     get_susceptance_vector(network::PowerGraphBase)::Array{Float64}
     Returns the susceptance vector for performing a dc power flow.
@@ -252,6 +256,7 @@ function n_vertices(network::PowerGraphBase)::Int
 end
 
 function take_out_line!(network::PowerGraphBase, id::Int)
+	take_out_line!(network.mpc, id)
     branch = get_branch(network.mpc, id)
     rem_edge!(network.G, branch.f_bus, branch.t_bus)
 end
@@ -268,4 +273,65 @@ end
 """Return list of buses in islands"""
 function get_islanded_buses(network::PowerGraphBase)::Array{Array{Int64,1},1}
 	connected_components(network.G)
+end
+
+"""Return incidence_matrix for islands in system"""
+function get_island_incidence_matrix(network::PowerGraphBase)::Tuple{Array{Int64, 2}, Dict{Int64, Int64}, Dict{Int64, Int64}}
+	get_island_incidence_matrix(get_incidence_matrix(network, true),
+								get_islanded_buses(network))
+end
+
+
+function get_island_incidence_matrix(A::Array{Int64, 2},
+									 islands::Array{Array{Int64, 1}, 1})::
+	Tuple{Array{Int64, 2}, Dict{Int64, Int64}, Dict{Int64, Int64}}
+	# At the moment I only consider two islands.
+	swaps = 1
+	bus_mapping = Dict{Int64, Int64}()
+	for bus in islands[1]
+		if bus > size(islands[1], 1)
+			swapcols!(A, bus, islands[2][swaps])
+			swaps += 1
+			bus_mapping[bus] = islands[2][swaps]
+		else
+			bus_mapping[bus] = bus
+		end
+	end
+
+	branches = Array{Array{Int64, 1}, 1}(undef, 2)
+	i = 1
+	while i <= size(branches, 1)
+		branches[i] = Array{Int64, 1}(undef, 0)
+		i += 1
+	end
+
+	i = 1
+	while i <= size(A,1 )
+		j = 1
+		while j <= size(A,2)
+			if A[i,j] != 0
+				if j <= 3  
+					append!(branches[1], i)
+	            else
+					append!(branches[2], i)
+	            end
+	        break
+			end   
+			j += 1
+		end
+		i += 1
+	end
+	
+	swaps = 1
+	branch_mapping = Dict{Int64, Int64}()
+	for branch in branches[1]
+		if branch > size(branches[1], 1)
+			swaprows!(A, branch, branches[2][swaps])
+			swaps += 1
+			branch_mapping[branch] = islands[2][swaps]
+		else
+			branch_mapping[branch] = branch
+		end
+	end
+	return A, bus_mapping, branch_mapping
 end

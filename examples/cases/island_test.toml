@@ -1,0 +1,8 @@
+[files]
+bus = "island_test_bus.csv"
+branch = "island_test_branch.csv"
+gen = "island_test_gen.csv"
+gencost = "island_test_gencost.csv"
+
+[configuration]
+baseMVA = 100.0
