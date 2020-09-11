@@ -293,8 +293,6 @@ function get_island_incidence_matrix(A::Array{Int64, 2},
 			swapcols!(A, bus, islands[2][swaps])
 			bus_mapping[bus] = islands[2][swaps]
 			swaps += 1
-		else
-			bus_mapping[bus] = bus
 		end
 	end
 
@@ -329,8 +327,6 @@ function get_island_incidence_matrix(A::Array{Int64, 2},
 			swaprows!(A, branch, branches[2][swaps])
 			branch_mapping[branch] = islands[2][swaps]
 			swaps += 1
-		else
-			branch_mapping[branch] = branch
 		end
 	end
 	return A, bus_mapping, branch_mapping
