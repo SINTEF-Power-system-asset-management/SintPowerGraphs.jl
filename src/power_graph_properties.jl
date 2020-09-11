@@ -223,6 +223,11 @@ function get_dc_admittance_matrix(network::PowerGraphBase)::Array{Float64, 2}
 	return A*Diagonal(get_susceptance_vector(network))*A'
 end
 
+function get_dc_admittance_matrix(network::PowerGraphBase, consider_status::Bool)::Array{Float64, 2}
+    A = get_incidence_matrix(network.mpc, consider_status)
+	return A*Diagonal(get_susceptance_vector(network, consider_status))*A'
+end
+
 function get_incidence_matrix(network::PowerGraphBase)::Array{Int64, 2}
 	return get_incidence_matrix(network.mpc)
 end
@@ -237,6 +242,10 @@ end
 """
 function get_susceptance_vector(network::PowerGraphBase)::Array{Float64,1}
     return get_susceptance_vector(network.mpc)
+end
+
+function get_susceptance_vector(network::PowerGraphBase, consider_status::Bool)::Array{Float64,1}
+    return get_susceptance_vector(network.mpc, consider_status)
 end
 
 function get_power_injection_vector(network::PowerGraphBase)::Array{Float64, 1}
@@ -276,7 +285,7 @@ function get_islanded_buses(network::PowerGraphBase)::Array{Array{Int64,1},1}
 end
 
 """Return incidence_matrix for islands in system"""
-function get_island_incidence_matrix(network::PowerGraphBase)::Tuple{Array{Int64, 2}, Dict{Int64, Int64}, Dict{Int64, Int64}}
+function get_island_incidence_matrix(network::PowerGraphBase)::Tuple{Array{Int64, 2}, Array{Array{Int64, 1}, 1}, Array{Array{Int64, 1}, 1}}
 	get_island_incidence_matrix(get_incidence_matrix(network, true),
 								get_islanded_buses(network))
 end
@@ -284,24 +293,20 @@ end
 
 function get_island_incidence_matrix(A::Array{Int64, 2},
 									 islands::Array{Array{Int64, 1}, 1})::
-	Tuple{Array{Int64, 2}, Dict{Int64, Int64}, Dict{Int64, Int64}}
+	Tuple{Array{Int64, 2}, Array{Array{Int64, 1}, 1}, Array{Array{Int64, 1}, 1}}
 	# At the moment I only consider two islands.
 	swaps = 1
-	bus_mapping = Dict{Int64, Int64}()
+	bus_mapping = [Array{Int64, 1}(undef, 0) for a in 1:2]
 	for bus in islands[1]
 		if bus > size(islands[1], 1)
 			swapcols!(A, bus, islands[2][swaps])
-			bus_mapping[bus] = islands[2][swaps]
+			append!(bus_mapping[1], bus)
+			append!(bus_mapping[2], islands[2][swaps])
 			swaps += 1
 		end
 	end
 
-	branches = Array{Array{Int64, 1}, 1}(undef, 2)
-	i = 1
-	while i <= size(branches, 1)
-		branches[i] = Array{Int64, 1}(undef, 0)
-		i += 1
-	end
+	branches = [Array{Int64, 1}(undef, 0) for a in 1:2]
 
 	i = 1
 	while i <= size(A,1 )
@@ -321,13 +326,14 @@ function get_island_incidence_matrix(A::Array{Int64, 2},
 	end
 	
 	swaps = 1
-	branch_mapping = Dict{Int64, Int64}()
+	branch_mapping = [Array{Int64, 1}(undef, 0) for a in 1:2]
 	for branch in branches[1]
 		if branch > size(branches[1], 1)
 			swaprows!(A, branch, branches[2][swaps])
-			branch_mapping[branch] = islands[2][swaps]
+			append!(branch_mapping[1], branch)
+			append!(branch_mapping[2], branches[2][swaps])
 			swaps += 1
 		end
-	end
+	end 
 	return A, bus_mapping, branch_mapping
 end

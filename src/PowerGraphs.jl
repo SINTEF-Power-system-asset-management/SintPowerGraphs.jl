@@ -19,7 +19,7 @@ include("graph_functions.jl")
 export dfs_iter
 
 include("utility_methods.jl")
-export swapcols!
+export swapcols!, swaprows!
 
 #include("plot_graphs.jl")
 #export plot_to_web

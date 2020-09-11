@@ -225,6 +225,16 @@ function get_susceptance_vector(case::Case)::Array{Float64, 1}
     return map(x-> 1/x, case.branch[:,:x])
 end
 
+function get_susceptance_vector(case::Case, consider_status::Bool)::Array{Float64, 1}
+	if consider_status
+		return map(x-> 1/x,
+				   case.branch[case.branch[!, :status], :x])
+	else
+		return
+		get_susceptance_vector(case)
+	end
+end
+
 """
     get_incidence_matrix(network::PowerGraphBase)::Array{Float64}
     Returns the susceptance vector for performing a dc power flow.

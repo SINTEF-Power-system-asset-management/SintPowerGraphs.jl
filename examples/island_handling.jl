@@ -30,7 +30,8 @@ A = get_incidence_matrix(graph, true)
 
 # A problem with this matrix is that when we try to do a dc power flow the determinant we must calculate will be zero. For the purpose of demonstrating this we assume bus 1 to be the reference bus.
 
-det(A[2:6, 2:6])
+B = get_dc_admittance_matrix(graph, true)
+det(B[2:6, 2:6])
 
 # To solve this problem it is useful to order the rows and columns of the incidence such that it becomes block diagonal with one block per island.
 
@@ -38,8 +39,18 @@ A, bus_mapping, branch_mapping = get_island_incidence_matrix(graph)
 
 A
 
+bus_mapping
+
+branch_mapping
+
 # Now we can easily invert the matrix contained in the block diagonal containing the reference bus.
 
-inv(A[2:3, 2:3])
+b = get_susceptance_vector(graph, true)
+# We have to remember to swap the position of the suceptances
+b[branch_mapping[1][1]], b[branch_mapping[2][1]] = b[branch_mapping[2][1]], b[branch_mapping[1][1]]
+D = Diagonal(b)
+B = A[1:3,1:3]'*D[1:3,1:3]*A[1:3,1:3]
+
+det(B[2:3, 2:3])
 
 
