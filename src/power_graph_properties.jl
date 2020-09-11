@@ -291,8 +291,8 @@ function get_island_incidence_matrix(A::Array{Int64, 2},
 	for bus in islands[1]
 		if bus > size(islands[1], 1)
 			swapcols!(A, bus, islands[2][swaps])
-			swaps += 1
 			bus_mapping[bus] = islands[2][swaps]
+			swaps += 1
 		else
 			bus_mapping[bus] = bus
 		end
@@ -327,8 +327,8 @@ function get_island_incidence_matrix(A::Array{Int64, 2},
 	for branch in branches[1]
 		if branch > size(branches[1], 1)
 			swaprows!(A, branch, branches[2][swaps])
-			swaps += 1
 			branch_mapping[branch] = islands[2][swaps]
+			swaps += 1
 		else
 			branch_mapping[branch] = branch
 		end
