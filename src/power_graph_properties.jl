@@ -290,7 +290,6 @@ function get_island_incidence_matrix(network::PowerGraphBase)::Tuple{Array{Int64
 								get_islanded_buses(network))
 end
 
-
 function get_island_incidence_matrix(A::Array{Int64, 2},
 									 islands::Array{Array{Int64, 1}, 1})::
 	Tuple{Array{Int64, 2}, Array{Array{Int64, 1}, 1}, Array{Array{Int64, 1}, 1}}
