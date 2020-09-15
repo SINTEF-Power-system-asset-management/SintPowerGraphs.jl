@@ -1,6 +1,6 @@
 using LightGraphs.LinAlg
 using LinearAlgebra
-""" 
+"""
     get_bus_data!(network::PowerGraphBase, bus_id::Int)
 
     Return a DataFrameRow with the bus data.
@@ -9,7 +9,7 @@ function get_bus_data!(network::PowerGraphBase, bus_id::Int)::DataFrameRow
     return get_bus!(network.mpc, bus_id)
 end
 
-""" 
+"""
     get_bus_data(network::PowerGraphBase, bus_id::Int)
 
     Return a copy of the DataFrameRow with the bus data.
@@ -98,7 +98,7 @@ function push_branch!(network::PowerGraphBase, type::Symbol, f_bus::Int, t_bus::
 	push_branch!(network.mpc, type, f_bus, t_bus, data)
 end
 
-""" 
+"""
     get_branch_data(network::PowerGraphBase, f_bus_id::Int, t_bus::Int)
 
     Return a dictionary containing the dictionary with the buse data.
@@ -194,7 +194,7 @@ end
 
 """
     get_π_equivalent(network::PowerGraphBase, from_bus::Int, to_bus::Int)
-    
+
     Returns the π-equivalent of a line segment.
 """
 function get_π_equivalent(network::PowerGraphBase, from_bus::Int, to_bus::Int)::π_segment
@@ -205,7 +205,7 @@ function get_π_equivalent(network::PowerGraphBase, from_bus::Int, to_bus::Int):
     elseif nrow(branch) == 0
         return π_segment(0, 0, 0)
     end
-    return get_π_equivalent(branch[1,:])  
+    return get_π_equivalent(branch[1,:])
 end
 
 function get_π_equivalent(branch::DataFrameRow)::π_segment
@@ -223,8 +223,17 @@ function get_dc_admittance_matrix(network::PowerGraphBase)::Array{Float64, 2}
 	return A*Diagonal(get_susceptance_vector(network))*A'
 end
 
+function get_dc_admittance_matrix(network::PowerGraphBase, consider_status::Bool)::Array{Float64, 2}
+    A = get_incidence_matrix(network.mpc, consider_status)
+	return A*Diagonal(get_susceptance_vector(network, consider_status))*A'
+end
+
 function get_incidence_matrix(network::PowerGraphBase)::Array{Int64, 2}
 	return get_incidence_matrix(network.mpc)
+end
+
+function get_incidence_matrix(network::PowerGraphBase, consider_status::Bool)::Array{Int64, 2}
+	return get_incidence_matrix(network.mpc, consider_status)
 end
 
 """
@@ -233,6 +242,10 @@ end
 """
 function get_susceptance_vector(network::PowerGraphBase)::Array{Float64,1}
     return get_susceptance_vector(network.mpc)
+end
+
+function get_susceptance_vector(network::PowerGraphBase, consider_status::Bool)::Array{Float64,1}
+    return get_susceptance_vector(network.mpc, consider_status)
 end
 
 function get_power_injection_vector(network::PowerGraphBase)::Array{Float64, 1}
@@ -252,6 +265,7 @@ function n_vertices(network::PowerGraphBase)::Int
 end
 
 function take_out_line!(network::PowerGraphBase, id::Int)
+	take_out_line!(network.mpc, id)
     branch = get_branch(network.mpc, id)
     rem_edge!(network.G, branch.f_bus, branch.t_bus)
 end
@@ -270,4 +284,55 @@ function get_islanded_buses(network::PowerGraphBase)::Array{Array{Int64,1},1}
 	connected_components(network.G)
 end
 
+"""Return incidence_matrix for islands in system"""
+function get_island_incidence_matrix(network::PowerGraphBase)::Tuple{Array{Int64, 2}, Array{Array{Int64, 1}, 1}, Array{Array{Int64, 1}, 1}}
+	get_island_incidence_matrix(get_incidence_matrix(network, true),
+								get_islanded_buses(network))
+end
 
+function get_island_incidence_matrix(A::Array{Int64, 2},
+									 islands::Array{Array{Int64, 1}, 1})::
+	Tuple{Array{Int64, 2}, Array{Array{Int64, 1}, 1}, Array{Array{Int64, 1}, 1}}
+	# At the moment I only consider two islands.
+	swaps = 1
+	bus_mapping = [Array{Int64, 1}(undef, 0) for a in 1:2]
+	for bus in islands[1]
+		if bus > size(islands[1], 1)
+			swapcols!(A, bus, islands[2][swaps])
+			append!(bus_mapping[1], bus)
+			append!(bus_mapping[2], islands[2][swaps])
+			swaps += 1
+		end
+	end
+
+	branches = [Array{Int64, 1}(undef, 0) for a in 1:2]
+
+	i = 1
+	while i <= size(A,1 )
+		j = 1
+		while j <= size(A,2)
+			if A[i,j] != 0
+				if j <= 3  
+					append!(branches[1], i)
+	            else
+					append!(branches[2], i)
+	            end
+	        break
+			end   
+			j += 1
+		end
+		i += 1
+	end
+	
+	swaps = 1
+	branch_mapping = [Array{Int64, 1}(undef, 0) for a in 1:2]
+	for branch in branches[1]
+		if branch > size(branches[1], 1)
+			swaprows!(A, branch, branches[2][swaps])
+			append!(branch_mapping[1], branch)
+			append!(branch_mapping[2], branches[2][swaps])
+			swaps += 1
+		end
+	end 
+	return A, bus_mapping, branch_mapping
+end

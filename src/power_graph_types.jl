@@ -4,9 +4,9 @@ using MetaGraphs
 abstract type PowerGraphBase end
 
 mutable struct RadialPowerGraph <: PowerGraphBase
-    G::DiGraph # graph containing the power network 
+    G::DiGraph # graph containing the power network
     mpc::Case
-    ref_bus::Int # The id of the reference bus
+    ref_bus::Int64 # The id of the reference bus
     radial::DiGraph # The graph directed from the transmission node
 end
 
@@ -21,7 +21,7 @@ end
 mutable struct PowerGraph <: PowerGraphBase
     G::DiGraph
     mpc::Case
-    ref_bus::Int
+    ref_bus::Int64
 end
 
 function MetaPowerGraph(case_file::String)
@@ -57,7 +57,7 @@ end
 
 function read_case(mpc::Case; ignore_id::Bool=false)
     G = DiGraph(nrow(mpc.bus))
-	
+
 	for branch in eachrow(mpc.branch)
 		if ignore_id
 			edge = Edge(branch[:f_bus], branch[:t_bus])
@@ -75,5 +75,3 @@ function read_case(mpc::Case; ignore_id::Bool=false)
     end
     return G, ref_bus
 end
-
-
