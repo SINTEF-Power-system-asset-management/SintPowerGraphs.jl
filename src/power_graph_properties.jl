@@ -176,11 +176,11 @@ function is_indicator(network::PowerGraphBase, f_bus::Int, t_bus::Int)
 	is_indicator(network.mpc, f_bus, t_bus)
 end
 
-function is_switch(network::PowerGraphBase, f_bus::Int, t_bus::Int)
+function is_switch(network::PowerGraphBase, f_bus, t_bus)
 	is_switch(network.mpc, f_bus, t_bus)
 end
 
-function is_transformer(network::PowerGraphBase, f_bus::Int, t_bus::Int)
+function is_transformer(network::PowerGraphBase, f_bus, t_bus)
 	is_transformer(network.mpc, f_bus, t_bus)
 end
 

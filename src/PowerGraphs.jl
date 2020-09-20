@@ -21,6 +21,9 @@ export π_segment, is_zero_impedance_line, series_impedance_norm
 include("graph_functions.jl")
 export dfs_iter
 
+include("process_Fasad_Case.jl")
+export process_Fasad_Case
+
 include("utility_methods.jl")
 export swapcols!, swaprows!
 
