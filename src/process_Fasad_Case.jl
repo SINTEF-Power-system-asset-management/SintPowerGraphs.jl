@@ -63,8 +63,8 @@ function f_process_nodes(mpc, mpc_temp, slack_bus)
         nodes_entry = [name, 1, 0, 0, 0, 0, 0, 1, 0, 22, 0, 1.2, 0.9]
         if name in mpc_temp.delivery_points["name"]
             df = mpc_temp.delivery_points[mpc_temp.delivery_points["name"] .== name,["demand", "reference_demand"]]
-            nodes_entry[3] = df["demand"]
-            load_entry = [name, df["demand"], df["reference_demand"]]
+            nodes_entry[3] = df["demand"][1]
+            load_entry = [name, df["demand"][1], df["reference_demand"][1]]
             push!(mpc.loaddata, load_entry)
         end
         if name==slack_bus 
