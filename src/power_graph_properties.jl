@@ -285,14 +285,17 @@ function get_islanded_buses(network::PowerGraphBase)::Array{Array{Int64,1},1}
 end
 
 """Return incidence_matrix for islands in system"""
-function get_island_incidence_matrix(network::PowerGraphBase)::Tuple{Array{Int64, 2}, Array{Array{Int64, 1}, 1}, Array{Array{Int64, 1}, 1}}
+function get_island_incidence_matrix(network::PowerGraphBase)::Tuple{Array{Int64, 2},
+																	 Array{Array{Int64, 1}, 1},
+																	 Array{Array{Int64, 1}, 1},
+																	 Array{Array{Int64, 1}, 1}}
 	get_island_incidence_matrix(get_incidence_matrix(network, true),
 								get_islanded_buses(network))
 end
 
 function get_island_incidence_matrix(A::Array{Int64, 2},
 									 islands::Array{Array{Int64, 1}, 1})::
-	Tuple{Array{Int64, 2}, Array{Array{Int64, 1}, 1}, Array{Array{Int64, 1}, 1}}
+	Tuple{Array{Int64, 2}, Array{Array{Int64, 1}, 1}, Array{Array{Int64, 1}, 1}, Array{Array{Int64, 1}, 1}}
 	# At the moment I only consider two islands.
 	swaps = 1
 	bus_mapping = [Array{Int64, 1}(undef, 0) for a in 1:2]
@@ -318,7 +321,7 @@ function get_island_incidence_matrix(A::Array{Int64, 2},
 			swaps += 1
 		end
 	end 
-	return A, bus_mapping, branch_mapping
+	return A, bus_mapping, branch_mapping, branches
 end
 
 """Return branches in islands."""
