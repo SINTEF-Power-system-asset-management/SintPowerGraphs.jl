@@ -304,25 +304,9 @@ function get_island_incidence_matrix(A::Array{Int64, 2},
 			swaps += 1
 		end
 	end
-
-	branches = [Array{Int64, 1}(undef, 0) for a in 1:2]
-
-	i = 1
-	while i <= size(A,1 )
-		j = 1
-		while j <= size(A,2)
-			if A[i,j] != 0
-				if j <= 3  
-					append!(branches[1], i)
-	            else
-					append!(branches[2], i)
-	            end
-	        break
-			end   
-			j += 1
-		end
-		i += 1
-	end
+	
+	# Figure out which branches are in the island
+	branches = get_islanded_branches(A, islands)
 	
 	swaps = 1
 	branch_mapping = [Array{Int64, 1}(undef, 0) for a in 1:2]
@@ -336,3 +320,37 @@ function get_island_incidence_matrix(A::Array{Int64, 2},
 	end 
 	return A, bus_mapping, branch_mapping
 end
+
+"""Return branches in islands."""
+function  get_islanded_branches(A::Array{Int64, 2},
+								islands::Array{Array{Int64, 1}, 1})::Array{Array{Int64, 1}, 1}
+	# Figure out which branches belong in the islands	
+	branches = [Array{Int64, 1}(undef, 0) for a in 1:2]
+	i = 1
+	while i <= size(A, 1 )
+		j = 1
+		while j <= size(A, 2)
+			if A[i,j] != 0
+				if j <= size(islands[1], 1) # if j is larger than size of island 1, it belongs to island 2  
+					append!(branches[1], i)
+	            else
+					append!(branches[2], i)
+				end
+			# If the entry was not 0 we have checked the branch
+			# We only need to check one entry on each row. The
+			# reason for this is that there are no connection
+			# between islands
+	        break 
+			end   
+			j += 1
+		end
+		i += 1
+	end
+	return branches
+end
+
+function  get_islanded_branches(network::PowerGraphBase)::Array{Array{Int64, 1}, 1}
+	get_islanded_branches(get_incidence_matrix(network, true),
+						  get_islanded_buses(network))
+end
+
