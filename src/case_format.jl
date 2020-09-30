@@ -329,6 +329,7 @@ end
 """ Sets branch to out of service"""
 function take_out_line!(mpc::Case, id::Int)
 	if !(:status in names(mpc.branch))
+		println("Status not in branch matrix, adding it.")
 		 mpc.branch[!, :status] .= true
 	 end
 	mpc.branch[id, :status] = false
