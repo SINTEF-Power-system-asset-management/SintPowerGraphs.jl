@@ -1,38 +1,3 @@
-function graphMap(mpc, G, ref_bus) #network::RadialPowerGraph)
-    mg = MetaGraph(G)
-    for bus in eachrow(mpc.bus)
-        set_prop!(mg, DataFrames.row(bus), :name, string(bus.ID))
-    end
-    set_indexing_prop!(mg, :name)
-    for branch in eachrow(mpc.branch)
-        # I set the following rule for the property stored on each edge:
-        # :switch = [-1 => no switch;
-        #            0  => open; # information stored on column switch.closed[1]
-        #            1  => closed; # information stored on column switch.closed[1]
-        #            2  => breaker; # information stored on column switch.breaker[1]
-        #            ]
-        if is_switch(mpc, branch.f_bus, branch.t_bus)
-            switch = get_switch(mpc, branch.f_bus, branch.t_bus)
-            if switch.breaker[1] == 1
-                # it is a breaker
-                set_prop!(mg, mg[string(branch.f_bus),:name], mg[string(branch.t_bus),:name], :switch, 2)
-            else
-                # it is a switch (it can be open or closed)
-                set_prop!(mg, mg[string(branch.f_bus),:name], mg[string(branch.t_bus),:name], :switch, switch.closed[1])
-            end
-        else
-            # it is a normal branch
-            set_prop!(mg, mg[string(branch.f_bus),:name], mg[string(branch.t_bus),:name], :switch, -1)
-        end
-    end
-    meta_radial = subgraph(mg, ref_bus)
-    # for f in eachrow(mpc.transformer)
-    #     push!(meta_radial, string(f.t_bus) => subgraph(mg, mg[string(f.t_bus), :name]))
-    # end
-    return mg, meta_radial
-end
-
-
 # These two functions below are taken from a github repo
 
 """Start at a node and traverse DFS/BFS, recording order nodes were seen
@@ -60,18 +25,18 @@ function traverse(g::MetaGraph, start::Int = 0, dfs::Bool = true)::Vector{Int}
 end
 
 """Make a subgraph out of all descendents with a given node as root"""
-function subgraph(g::MetaGraph, start::Int = 0)::MetaDiGraph
+function subgraph(g::MetaDiGraph, start::Int = 0)::MetaDiGraph
     # start = start == 0 ? root(g) : start
 
     # removing open switch edges before traversing with BFS
-    g_copy = copy(g)
+	g_copy = MetaGraph(g)
     open_switches_iter = filter_edges(g, (g,x)->(get_prop(g, x, :switch) == 0))
     for e in open_switches_iter
         rem_edge!(g_copy, e)
     end
 
     inds = traverse(g_copy, start, false)
-    newgraph = MetaDiGraph()
+	newgraph = MetaDiGraph()
     set_indexing_prop!(newgraph, :name)
     set_prop!(newgraph, :root, 1)
     reindex = Dict{Int,Int}()
@@ -88,7 +53,14 @@ function subgraph(g::MetaGraph, start::Int = 0)::MetaDiGraph
         if !(nothing in [src, tar])
             #if get_prop(g, e, :switch) != 0 
             add_edge!(newgraph, src, tar)
-            set_prop!(newgraph, src, tar, :switch, get_prop(g_copy, e.src, e.dst, :switch))
+			# Sometimes the lines are in the opposite direction in the original graph
+			if has_edge(g, e.src, e.dst)
+				set_prop!(newgraph, src, tar, :switch, get_prop(g_copy, e.src, e.dst, :switch))
+			else
+				# When f_bus and t_bus have been inversed the property disappears from the 
+				# graph when going from MetaDiGraph to MetaGraph
+				set_prop!(newgraph, src, tar, :switch, get_prop(g, e.dst, e.src, :switch))
+			end
            # end
         end
     end

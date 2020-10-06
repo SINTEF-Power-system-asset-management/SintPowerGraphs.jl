@@ -2,11 +2,13 @@ using PowerGraphs
 using Test 
 
 @testset "Check construction of radial graph" begin
-    @test test_graph == test.radial
+	for edge in edges(test.radial)
+		@test has_edge(test_graph, parse(Int64, test.radial[edge.src, :name]), parse(Int64, test.radial[edge.dst, :name]))
+	end
 end
 
 # Create the reduced graph
-test_red_graph = DiGraph(6)
+test_red_graph = MetaDiGraph(6)
 add_edge!(test_red_graph, 1, 2)
 add_edge!(test_red_graph, 2, 3)
 add_edge!(test_red_graph, 3, 4)

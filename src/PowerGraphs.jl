@@ -4,7 +4,7 @@ include("case_format.jl")
 export Case, to_csv, update_ID!, get_n_buses, to_ppc
 
 include("power_graph_types.jl")
-export RadialPowerGraph, PowerGraph, MetaPowerGraph
+export RadialPowerGraph, PowerGraph, MetaPowerGraph, read_case!
 
 include("radial_grid_operations.jl")
 export merge_line_segments, directed_from_feeder, remove_zero_impedance_lines, remove_low_impedance_lines, get_line_lims_pu

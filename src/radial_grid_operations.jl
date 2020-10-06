@@ -1,12 +1,3 @@
-
-function directed_from_feeder(G::DiGraph, feeder_node::Int)
-    # Make the graph undirected
-    undirected = SimpleGraph(G)
-
-    # Return a tree from the feeder node
-    return dfs_tree(undirected, feeder_node)
-end
-
 """
 	merge_line_segments(network, keep)
 
