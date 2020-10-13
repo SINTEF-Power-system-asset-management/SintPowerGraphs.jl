@@ -13,12 +13,12 @@ function graphMap(mpc, G, ref_bus) #network::RadialPowerGraph)
         #            ]
         if is_switch(mpc, branch.f_bus, branch.t_bus)
             switch = get_switch(mpc, branch.f_bus, branch.t_bus)
-            if switch.breaker[1] == 1
+            if switch.breaker[1] == "True"
                 # it is a breaker
                 set_prop!(mg, mg[string(branch.f_bus),:name], mg[string(branch.t_bus),:name], :switch, 2)
             else
                 # it is a switch (it can be open or closed)
-                set_prop!(mg, mg[string(branch.f_bus),:name], mg[string(branch.t_bus),:name], :switch, switch.closed[1])
+                set_prop!(mg, mg[string(branch.f_bus),:name], mg[string(branch.t_bus),:name], :switch, if switch.closed[1]=="True" 1 else 0 end)
             end
         else
             # it is a normal branch
