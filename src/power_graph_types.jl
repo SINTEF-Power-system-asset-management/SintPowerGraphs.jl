@@ -7,14 +7,14 @@ abstract type PowerGraphBase end
 mutable struct RadialPowerGraph <: PowerGraphBase
     G::MetaDiGraph # graph containing the power network
     mpc::Case
-    ref_bus::Int64 # The id of the reference bus
+    ref_bus::String # The id of the reference bus
     radial::MetaDiGraph # The graph directed from the transmission node
 end
 
 mutable struct PowerGraph <: PowerGraphBase
     G::MetaDiGraph
     mpc::Case
-    ref_bus::Int64
+    ref_bus::String
 end
 
 function MetaPowerGraph(case_file::String)
@@ -34,7 +34,7 @@ end
 function RadialPowerGraph()
     G = MetaDiGraph()
     mpc = Case()
-    ref_bus = 0
+    ref_bus = ""
     radial = MetaDiGraph()
     RadialPowerGraph(G, mpc, ref_bus, radial)
 end
@@ -42,7 +42,7 @@ end
 function RadialPowerGraph(case_file::String)
     mpc = Case(case_file::String)
     G, ref_bus = read_case!(mpc)
-    radial = subgraph(G, ref_bus)
+	radial = subgraph(G, G[ref_bus, :name])
     RadialPowerGraph(G, mpc, ref_bus, radial)
 end
 
@@ -61,9 +61,9 @@ function read_case!(mpc::Case)
     ref_bus = NaN
 	for bus in eachrow(mpc.bus)
         if bus[:type] == 3
-			ref_bus = DataFrames.row(bus)
+			ref_bus = string(DataFrames.row(bus))
         end
-        set_prop!(G, DataFrames.row(bus), :name, string(bus.ID))
+        set_prop!(G, DataFrames.row(bus), :name, bus.ID)
     end
     
     set_indexing_prop!(G, :name)
