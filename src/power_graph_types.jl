@@ -17,20 +17,6 @@ mutable struct PowerGraph <: PowerGraphBase
     ref_bus::String
 end
 
-function MetaPowerGraph(case_file::String)
-    conf = TOML.parsefile(case_file)
-    format = get(conf, "format", 0)
-    if format == 0
-        mpc = Case(case_file::String) # relrad format
-    else
-        mpc_temp = Fasad_Case(case_file::String) # fasad format
-        mpc = process_Fasad_Case(mpc_temp, conf["transmission_grid"])
-    end
-    G, ref_bus = read_case!(mpc)
-    meta, meta_radial = graphMap(mpc, G, ref_bus)
-    MetaPowerGraph(G, mpc, ref_bus, meta, meta_radial)
-end
-
 function RadialPowerGraph()
     G = MetaDiGraph()
     mpc = Case()
