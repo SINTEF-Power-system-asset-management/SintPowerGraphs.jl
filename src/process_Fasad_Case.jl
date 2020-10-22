@@ -14,7 +14,7 @@ function f_process_lines(mpc, mpc_temp)
     mpc.reldata = DataFrame([Symbol(col) => Any[] for col in reldata_columns])
     for row in collect(eachrow(mpc_temp.lines))
         lines_entry = [row["from"], row["to"], 0, 0, 0, 0, 0, 0, 0, 0]
-        reldata_entry = [size(mpc.branch)[1]+1, row["from"], row["to"], row["repair_time"]/60, row["failure_frequency_permanent"], row["failure_frequency_temporary"],0, 0.02, row["apparent_power_limit"]]
+        reldata_entry = [size(mpc.branch)[1]+1, row["from"], row["to"], row["repair_time"]/60, row["failure_frequency_temporary"], row["failure_frequency_permanent"],0, 0.02, row["apparent_power_limit"]]
         push!(mpc.branch, lines_entry)
         push!(mpc.reldata, reldata_entry)
     end
