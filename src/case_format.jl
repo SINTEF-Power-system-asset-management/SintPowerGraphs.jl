@@ -344,10 +344,23 @@ end
 
 """ Convert the case to the PYPOWER Case format."""
 function to_ppc(mpc::Case)::Dict{String, Any}
+
+        # Note: This only work if IDs are numbers, I can easily make a mapping to
+        # make it work for text if needed
 	case = Dict{String, Any}()
-	case["bus"] = convert(Array{Float64, 2}, mpc.bus)
-	case["gen"] = hcat(convert(Array{Float64, 2}, mpc.gen), zeros(nrow(mpc.gen), 8))
-	case["branch"] = convert(Array{Float64, 2}, mpc.branch)
+
+        bus = deepcopy(mpc.bus)
+        bus[!, :ID] = parse.(Int, bus[!, :ID])
+	case["bus"] = convert(Array{Float64, 2}, bus)
+
+        gen = deepcopy(mpc.gen)
+        gen[!, :ID] = parse.(Int, gen[!, :ID])
+	case["gen"] = hcat(convert(Array{Float64, 2}, gen), zeros(nrow(gen), 8))
+
+        branch = deepcopy(mpc.branch)
+        branch[!, :f_bus] = parse.(Int, branch[!, :f_bus])
+        branch[!, :t_bus] = parse.(Int, branch[!, :t_bus])
+	case["branch"] = convert(Array{Float64, 2}, branch)
 	case["baseMVA"] = mpc.baseMVA
 	case["version"] = 2
 
