@@ -57,7 +57,14 @@ function Case(fname::String)::Case
 	conf = TOML.parsefile(fname)
 	dir = splitdir(fname)[1]
 	for (field, file) in conf["files"]
-		setfield!(mpc, Symbol(field), CSV.File(joinpath(dir, file)) |> DataFrame)
+		 temp = CSV.File(joinpath(dir, file)) |> DataFrame
+		# Convert IDs to string
+		 for key in ["ID", "f_bus", "t_bus"]
+			 if key in names(temp)
+				 temp[!, key] = string.(temp[:, key])
+			 end
+		 end
+		 setfield!(mpc, Symbol(field), temp)
 	end
 	mpc.baseMVA = conf["configuration"]["baseMVA"]
 
@@ -83,29 +90,29 @@ function push_bus!(mpc::Case, bus::DataFrameRow)
     push!(mpc.bus, bus)
 end
 
-function push_branch_type!(df::DataFrame, f_bus::Int, t_bus::Int, data::DataFrameRow)
+function push_branch_type!(df::DataFrame, f_bus::String, t_bus::String, data::DataFrameRow)
     data[:f_bus] = f_bus
     data[:t_bus] = t_bus
     push!(df, data)
 end
 
-function push_branch!(mpc::Case, f_bus::Int, t_bus::Int, branch::DataFrameRow)
+function push_branch!(mpc::Case, f_bus::String, t_bus::String, branch::DataFrameRow)
 	push_branch_type!(mpc.branch, f_bus, t_bus, branch)
 end
 
-function push_branch!(mpc::Case, type::Symbol, f_bus::Int, t_bus::Int, data::DataFrameRow)
+function push_branch!(mpc::Case, type::Symbol, f_bus::String, t_bus::String, data::DataFrameRow)
 	push_branch_type!(getfield(mpc, type), f_bus, t_bus, data)
 end
 
-function push_indicator!(mpc::Case, f_bus::Int, t_bus::Int, branch::DataFrameRow)
+function push_indicator!(mpc::Case, f_bus::String, t_bus::String, branch::DataFrameRow)
 	push_branch_type!(mpc.indicator, f_bus, t_bus, branch)
 end
 
-function push_switch!(mpc::Case, f_bus::Int, t_bus::Int, branch::DataFrameRow)
+function push_switch!(mpc::Case, f_bus::String, t_bus::String, branch::DataFrameRow)
 	push_branch_type!(mpc.switch, f_bus, t_bus, branch)
 end
 
-function push_transformer!(mpc::Case, f_bus::Int, t_bus::Int, transformer::DataFrameRow)
+function push_transformer!(mpc::Case, f_bus::String, t_bus::String, transformer::DataFrameRow)
 	push_branch_type!(mpc.transformer, f_bus, t_bus, transformer)
 end
 
@@ -117,27 +124,27 @@ function push_loaddata!(mpc::Case, load::DataFrameRow)
     push!(mpc.loaddata, load)
 end
 
-function get_bus(mpc::Case, ID::Int)::DataFrameRow
-    return mpc.bus[ID, :]
+function get_bus(mpc::Case, ID::String)::DataFrameRow
+	return mpc.bus[mpc.bus.ID.==ID, :][1, :]
 end
 
-function get_bus!(mpc::Case, ID::Int)::DataFrameRow
-    return mpc.bus[ID, !]
+function get_bus!(mpc::Case, ID::String)::DataFrameRow
+	return mpc.bus[mpc.bus.ID.==ID, !][1, :]
 end
 
-function get_loaddata(mpc::Case, bus_id::Int)::DataFrame
-    return mpc.loaddata[mpc.loaddata.bus.==bus_id,:]
+function get_loaddata(mpc::Case, bus_id::String)::DataFrame
+    return mpc.loaddata[mpc.loaddata.ID.==bus_id,:]
 end
 
-function get_gen(mpc::Case, bus_id::Int)::DataFrame
-    return mpc.gen[mpc.gen.bus.==bus_id,:]
+function get_gen(mpc::Case, bus_id::String)::DataFrame
+    return mpc.gen[mpc.gen.ID.==bus_id,:]
 end
 
-function get_gen!(mpc::Case, bus_id::Int)::DataFrame
-    return mpc.gen[mpc.gen.bus.==bus_id, !]
+function get_gen!(mpc::Case, bus_id::String)::DataFrame
+    return mpc.gen[mpc.gen.ID.==bus_id, !]
 end
 
-function get_branch_type(branch::DataFrame, f_bus::Any, t_bus::Any)::DataFrame
+function get_branch_type(branch::DataFrame, f_bus::String, t_bus::String)::DataFrame
     temp = branch[(branch.f_bus .== f_bus) .&
                       (branch.t_bus .== t_bus),:]
 	if isempty(temp)
@@ -147,112 +154,112 @@ function get_branch_type(branch::DataFrame, f_bus::Any, t_bus::Any)::DataFrame
    return temp
 end
 
-function get_branch(mpc::Case, f_bus::Any, t_bus::Any)::DataFrame
+function get_branch(mpc::Case, f_bus::String, t_bus::String)::DataFrame
 	get_branch_type(mpc.branch, f_bus, t_bus)
 end
 
-function get_switch(mpc::Case, f_bus::Any, t_bus::Any)::DataFrame
+function get_switch(mpc::Case, f_bus::String, t_bus::String)::DataFrame
 	get_branch_type(mpc.switch, f_bus, t_bus)
 end
 
-function get_indicator(mpc::Case, f_bus::Int, t_bus::Int)::DataFrame
+function get_indicator(mpc::Case, f_bus::String, t_bus::String)::DataFrame
 	get_branch_type(mpc.indicator, f_bus, t_bus)
 end
 
-function get_transformer(mpc::Case, f_bus::Int, t_bus::Int)::DataFrame
+function get_transformer(mpc::Case, f_bus::String, t_bus::String)::DataFrame
 	get_branch_type(mpc.transformer, f_bus, t_bus)
 end
 
-function get_branch(mpc::Case, id::Int)::DataFrameRow
-    return mpc.branch[id,:]
+function get_branch(mpc::Case, id::String)::DataFrame
+    return mpc.branch[mpc.branch.ID.==id,:]
 end
 
-function get_branch_data(mpc::Case, type::Symbol, f_bus::Any, t_bus::Any)::DataFrameRow
+function get_branch_data(mpc::Case, type::Symbol, f_bus::String, t_bus::String)::DataFrameRow
 	get_branch_type(getfield(mpc, type), f_bus, t_bus)[1,:]
 end
 
-function get_branch_data(mpc::Case, type::Symbol, column::Symbol, f_bus::Any, t_bus::Any)
+function get_branch_data(mpc::Case, type::Symbol, column::Symbol, f_bus::String, t_bus::String)
 
 	get_branch_data(mpc, type, f_bus, t_bus)[column]
 end
 
-function is_branch_type_in_case(df::DataFrame, f_bus::Any, t_bus::Any)::Bool
+function is_branch_type_in_case(df::DataFrame, f_bus::String, t_bus::String)::Bool
 	(any((df.f_bus .== f_bus) .& (df.t_bus .== t_bus)) ||
 	 any((df.t_bus .== f_bus) .& (df.f_bus .== t_bus)))
 end
 
-function is_branch_type_in_case(mpc::Case, type::Symbol, f_bus::Any,
-								 t_bus::Any)::Bool
+function is_branch_type_in_case(mpc::Case, type::Symbol, f_bus::String,
+								 t_bus::String)::Bool
 	is_branch_type_in_case(getfield(mpc, type), f_bus, t_bus)
 end
 
-function set_branch_type(branch::DataFrame, f_bus::Any, t_bus::Any, data::DataFrame)
+function set_branch_type(branch::DataFrame, f_bus::String, t_bus::String, data::DataFrame)
     branch[(branch.f_bus .== f_bus) .&
               (branch.t_bus .== t_bus), :] = data
 end
 
-function set_branch!(mpc::Case, f_bus::Any, t_bus::Any, data::DataFrame)
+function set_branch!(mpc::Case, f_bus::String, t_bus::String, data::DataFrame)
 	set_branch_type(mpc.branch, f_bus, t_bus, data)
 end
 
-function set_branch_data(df::DataFrame, column::Symbol, f_bus::Any, t_bus::Any, data)
+function set_branch_data(df::DataFrame, column::Symbol, f_bus::String, t_bus::String, data)
 	df[(df.f_bus .== f_bus) .& (df.t_bus .== t_bus) .|
 	  (df.f_bus .== t_bus) .& (df.t_bus .== f_bus), column] .= data
 end
 
-function set_branch_data!(mpc::Case, type::Symbol, column::Symbol, f_bus::Any, t_bus::Any,
+function set_branch_data!(mpc::Case, type::Symbol, column::Symbol, f_bus::String, t_bus::String,
 				 data)
 set_branch_data(getfield(mpc, type), column, f_bus, t_bus, data)
 end
 
-function set_switch!(mpc::Case, f_bus::Any, t_bus::Any, data::DataFrame)
+function set_switch!(mpc::Case, f_bus::String, t_bus::String, data::DataFrame)
 	set_branch_type(mpc.switch, f_bus, t_bus, data)
 end
 
-function set_indicator!(mpc::Case, f_bus::Any, t_bus::Any, data::DataFrame)
+function set_indicator!(mpc::Case, f_bus::String, t_bus::String, data::DataFrame)
 	set_branch_type(mpc.indicator, f_bus, t_bus, data)
 end
 
-function is_gen_bus(mpc::Case, bus_id::Int)::Bool
-    return bus_id in mpc.gen.bus
+function is_gen_bus(mpc::Case, bus_id::String)::Bool
+    return bus_id in mpc.gen.ID
 end
 
-function is_neighbor_switch_or_indicator(df::DataFrame, f_bus::Int, t_bus::Int)::Bool
+function is_neighbor_switch_or_indicator(df::DataFrame, f_bus::String, t_bus::String)::Bool
 	(any(df.f_bus .== f_bus) || any(df.t_bus .== f_bus) ||
 	 any(df.f_bus .== t_bus) || any(df.t_bus .== t_bus))
 end
 
-function is_neighbor_switch(mpc::Case, f_bus::Any, t_bus::Any)
+function is_neighbor_switch(mpc::Case, f_bus::String, t_bus::String)
 	nrow(mpc.switch) > 0 && is_neighbor_switch_or_indicator(mpc.switch,
 															f_bus,
 															t_bus)
 end
 
-function is_neighbor_indicator(mpc::Case, f_bus::Any, t_bus::Any)
+function is_neighbor_indicator(mpc::Case, f_bus::String, t_bus::String)
 	nrow(mpc.indicator) > 0 && is_neighbor_switch_or_indicator(mpc.indicator,
 															   f_bus,
 															      t_bus)
 end
 
-function is_switch(mpc::Case, f_bus::Any, t_bus::Any)::Bool
+function is_switch(mpc::Case, f_bus::String, t_bus::String)::Bool
 	nrow(mpc.switch) > 0 && is_branch_type_in_case(mpc.switch, f_bus, t_bus)
 end
 
-function is_indicator(mpc::Case, f_bus::Int, t_bus::Int)::Bool
+function is_indicator(mpc::Case, f_bus::String, t_bus::String)::Bool
 	nrow(mpc.indicator) > 0 && is_branch_type_in_case(mpc.indicator, f_bus, t_bus)
 end
 
-function is_transformer(mpc::Case, f_bus::Any, t_bus::Any)::Bool
+function is_transformer(mpc::Case, f_bus::String, t_bus::String)::Bool
 	nrow(mpc.transformer) > 0 && is_branch_type_in_case(mpc.transformer, f_bus, t_bus)
 end
 
-function delete_branch!(mpc::Case, f_bus::Any, t_bus::Any)
+function delete_branch!(mpc::Case, f_bus::String, t_bus::String)
     deleterows!(mpc.branch, (mpc.branch.f_bus .== f_bus) .&
                mpc.branch.t_bus .== t_bus)
 end
 
-function delete_bus!(mpc::Case, bus::Any)
-    deleterows!(mpc.bus, bus)
+function delete_bus!(mpc::Case, bus::String)
+    delete!(mpc.bus, mpc.bus.ID .== bus)
 end
 
 """
@@ -337,10 +344,23 @@ end
 
 """ Convert the case to the PYPOWER Case format."""
 function to_ppc(mpc::Case)::Dict{String, Any}
+
+        # Note: This only work if IDs are numbers, I can easily make a mapping to
+        # make it work for text if needed
 	case = Dict{String, Any}()
-	case["bus"] = convert(Array{Float64, 2}, mpc.bus)
-	case["gen"] = hcat(convert(Array{Float64, 2}, mpc.gen), zeros(nrow(mpc.gen), 8))
-	case["branch"] = convert(Array{Float64, 2}, mpc.branch)
+
+        bus = deepcopy(mpc.bus)
+        bus[!, :ID] = parse.(Int, bus[!, :ID])
+	case["bus"] = convert(Array{Float64, 2}, bus)
+
+        gen = deepcopy(mpc.gen)
+        gen[!, :ID] = parse.(Int, gen[!, :ID])
+	case["gen"] = hcat(convert(Array{Float64, 2}, gen), zeros(nrow(gen), 8))
+
+        branch = deepcopy(mpc.branch)
+        branch[!, :f_bus] = parse.(Int, branch[!, :f_bus])
+        branch[!, :t_bus] = parse.(Int, branch[!, :t_bus])
+	case["branch"] = convert(Array{Float64, 2}, branch)
 	case["baseMVA"] = mpc.baseMVA
 	case["version"] = 2
 
@@ -365,16 +385,16 @@ function get_bus_row(mpc::Case, id)::Int64
 end
 
 """ Sets branch to out of service"""
-function take_out_line!(mpc::Case, id::Int)
+function take_out_line!(mpc::Case, ID::String)
 	if !(:status in names(mpc.branch))
 		println("Status not in branch matrix, adding it.")
 		 mpc.branch[!, :status] .= true
 	 end
-	mpc.branch[id, :status] = false
+	mpc.branch[mpc.branch.ID.==ID, :status] = false
 end
 
 """ Sets branch to out of service"""
-function put_back_line!(mpc::Case, id::Int)
-	mpc.branch[id, :status] = true
+function put_back_line!(mpc::Case, id::String)
+	mpc.branch[mpc.branch.ID.==ID, :status] = true
 end
 

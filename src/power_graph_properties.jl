@@ -1,11 +1,11 @@
 using LightGraphs.LinAlg
 using LinearAlgebra
 """
-    get_bus_data!(network::PowerGraphBase, bus_id::Int)
+    get_bus_data!(network::PowerGraphBase, bus_id::String)
 
     Return a DataFrameRow with the bus data.
 """
-function get_bus_data!(network::PowerGraphBase, bus_id::Any)::DataFrameRow
+function get_bus_data!(network::PowerGraphBase, bus_id::String)::DataFrameRow
     return get_bus!(network.mpc, bus_id)
 end
 
@@ -14,24 +14,25 @@ end
 
     Return a copy of the DataFrameRow with the bus data.
 """
-function get_bus_data(network::PowerGraphBase, bus_id::Any)::DataFrameRow
+function get_bus_data(network::PowerGraphBase, bus_id::String)::DataFrameRow
     return get_bus(network.mpc, bus_id)
 end
 
-function get_gen_data!(network::PowerGraphBase, bus_id::Any)::DataFrame
+function get_gen_data!(network::PowerGraphBase, bus_id::String)::DataFrame
     return get_gen!(network.mpc, bus_id)
 end
 
-function get_gen_data(network::PowerGraphBase, bus_id::Any)::DataFrame
+function get_gen_data(network::PowerGraphBase, bus_id::String)::DataFrame
     return get_gen(network.mpc, bus_id)
 end
 
-function get_loaddata(network::PowerGraphBase, bus_id::Any)::DataFrame
+function get_loaddata(network::PowerGraphBase, bus_id::String)::DataFrame
     return get_loaddata(network.mpc, bus_id)
 end
 
 function push_bus!(network::PowerGraphBase, data::DataFrameRow)
     add_vertex!(network.G)
+	set_prop!(network.G, nv(network.G) , :name, string(data.ID))
     push_bus!(network.mpc, data)
 end
 
@@ -41,7 +42,7 @@ function push_gen!(network::PowerGraphBase, data::DataFrame)
     end
 end
 
-function push_gen!(network::PowerGraphBase, data::DataFrame, bus::Any)
+function push_gen!(network::PowerGraphBase, data::DataFrame, bus::String)
     for gen in eachrow(data)
         push_gen!(network, gen, bus)
     end
@@ -51,8 +52,8 @@ function push_gen!(network::PowerGraphBase, data::DataFrameRow)
     push_gen!(network.mpc, data)
 end
 
-function push_gen!(network::PowerGraphBase, data::DataFrameRow, bus::Any)
-    data[:bus] = bus
+function push_gen!(network::PowerGraphBase, data::DataFrameRow, bus::String)
+    data[:ID] = bus
     push_gen!(network, data)
 end
 
@@ -60,41 +61,43 @@ function push_loaddata!(network::PowerGraphBase, data::DataFrameRow)
     push_loaddata!(network.mpc, data)
 end
 
-function push_loaddata!(network::PowerGraphBase, data::DataFrameRow, bus::Any)
-    data[:bus] = bus
+function push_loaddata!(network::PowerGraphBase, data::DataFrameRow, bus::String)
+    data[:ID] = bus
     push_loaddata!(network, data)
 end
 
-function push_loaddata!(network::PowerGraphBase, data::DataFrame, bus::Any)
+function push_loaddata!(network::PowerGraphBase, data::DataFrame, bus::String)
     for load in eachrow(data)
         push_loaddata!(network, load, bus)
     end
 end
 
-function push_branch!(network::PowerGraphBase, f_bus::Any, t_bus::Any, data::DataFrameRow)
+function push_branch!(network::PowerGraphBase, f_bus::String, t_bus::String, data::DataFrameRow)
 	push_branch!(network.mpc, f_bus, t_bus, data)
-    add_edge!(network.G, f_bus, t_bus)
+    add_edge!(network.G,
+			  network.G[string(f_bus), :name],
+			  network.G[string(t_bus), :name])
 end
 
-function push_switch!(network::PowerGraphBase, f_bus::Any, t_bus::Any, data::DataFrameRow)
+function push_switch!(network::PowerGraphBase, f_bus::String, t_bus::String, data::DataFrameRow)
 	push_switch!(network.mpc, f_bus, t_bus, data)
 end
 
-function push_indicator!(network::PowerGraphBase, f_bus::Any, t_bus::Any, data::DataFrameRow)
+function push_indicator!(network::PowerGraphBase, f_bus::String, t_bus::String, data::DataFrameRow)
 	push_indicator!(network.mpc, f_bus, t_bus, data)
 end
 
-function push_transformer!(network::PowerGraphBase, f_bus::Any, t_bus::Any, data::DataFrameRow)
+function push_transformer!(network::PowerGraphBase, f_bus::String, t_bus::String, data::DataFrameRow)
 	push_transformer!(network.mpc, f_bus, t_bus, data)
 end
 
-function push_branch!(network::PowerGraphBase, f_bus::Any, t_bus::Any, data::DataFrame)
+function push_branch!(network::PowerGraphBase, f_bus::String, t_bus::String, data::DataFrame)
     for branch in eachrow(data)
         push_branch!(network, f_bus, t_bus, branch)
     end
 end
 
-function push_branch!(network::PowerGraphBase, type::Symbol, f_bus::Any, t_bus::Any, data::DataFrameRow)
+function push_branch!(network::PowerGraphBase, type::Symbol, f_bus::String, t_bus::String, data::DataFrameRow)
 	push_branch!(network.mpc, type, f_bus, t_bus, data)
 end
 
@@ -103,7 +106,7 @@ end
 
     Return a dictionary containing the dictionary with the buse data.
 """
-function get_branch_data(network::PowerGraphBase, f_bus::Any, t_bus::Any)::DataFrame
+function get_branch_data(network::PowerGraphBase, f_bus::String, t_bus::String)::DataFrame
     if has_edge(network.G, f_bus, t_bus)
         return get_branch(network.mpc, f_bus, t_bus)
     else
@@ -111,46 +114,46 @@ function get_branch_data(network::PowerGraphBase, f_bus::Any, t_bus::Any)::DataF
     end
 end
 
-function get_branch_data(network::PowerGraphBase, type::Symbol, f_bus::Any,
-						 t_bus::Any)::DataFrameRow
+function get_branch_data(network::PowerGraphBase, type::Symbol, f_bus::String,
+						 t_bus::String)::DataFrameRow
 	get_branch_data(network.mpc, type, f_bus, t_bus)
 end
 
-function get_branch_data(network::PowerGraphBase, type::Symbol, column::Symbol, f_bus::Any,
-						 t_bus::Any)
+function get_branch_data(network::PowerGraphBase, type::Symbol, column::Symbol, f_bus::String,
+						 t_bus::String)
 	get_branch_data(network.mpc, type, column, f_bus, t_bus)
 end
 
-function is_branch_type_in_graph(network::PowerGraphBase, type::Symbol, f_bus::Any,
-								 t_bus::Any)
+function is_branch_type_in_graph(network::PowerGraphBase, type::Symbol, f_bus::String,
+								 t_bus::String)
 	is_branch_type_in_case(network.mpc, type, f_bus, t_bus)
 end
 
-function set_branch_data!(network::PowerGraphBase, type::Symbol, column::Symbol, f_bus::Any, t_bus::Any, data)
+function set_branch_data!(network::PowerGraphBase, type::Symbol, column::Symbol, f_bus::String, t_bus::String, data)
 	set_branch_data!(network.mpc, type, column, f_bus, t_bus, data)
 end
 
-function get_switch_data(network::PowerGraphBase, f_bus::Any, t_bus::Any)::DataFrame
+function get_switch_data(network::PowerGraphBase, f_bus::String, t_bus::String)::DataFrame
 	get_switch(network.mpc, f_bus, t_bus)
 end
 
-function get_indicator_data(network::PowerGraphBase, f_bus::Any, t_bus::Any)::DataFrame
+function get_indicator_data(network::PowerGraphBase, f_bus::String, t_bus::String)::DataFrame
 	get_indicator(network.mpc, f_bus, t_bus)
 end
 
-function get_transformer_data(network::PowerGraphBase, f_bus::Any, t_bus::Any)::DataFrame
+function get_transformer_data(network::PowerGraphBase, f_bus::String, t_bus::String)::DataFrame
 	get_transformer(network.mpc, f_bus, t_bus)
 end
 
-function set_branch_data!(network::PowerGraphBase, f_bus::Any, t_bus::Any, data::DataFrame)
+function set_branch_data!(network::PowerGraphBase, f_bus::String, t_bus::String, data::DataFrame)
     set_branch!(network.mpc, f_bus, t_bus, data)
 end
 
-function set_switch_data!(network::PowerGraphBase, f_bus::Any, t_bus::Any, data::DataFrame)
+function set_switch_data!(network::PowerGraphBase, f_bus::String, t_bus::String, data::DataFrame)
     set_switch!(network.mpc, f_bus, t_bus, data)
 end
 
-function set_indicator_data!(network::PowerGraphBase, f_bus::Any, t_bus::Any, data::DataFrame)
+function set_indicator_data!(network::PowerGraphBase, f_bus::String, t_bus::String, data::DataFrame)
     set_indicator!(network.mpc, f_bus, t_bus, data)
 end
 
@@ -159,8 +162,8 @@ end
 
     Returns true if the bus bus_id is a load.
 """
-function is_load_bus(network::PowerGraphBase, bus_id::Any)
-    return network.mpc.bus[bus_id,:Pd]>0
+function is_load_bus(network::PowerGraphBase, bus_id::String)::Bool
+	return any(x-> x>0, network.mpc.bus[network.mpc.bus.ID.==bus_id, :Pd])
 end
 
 """
@@ -168,11 +171,11 @@ end
 
     Returns true if the bus bus_id is a load.
 """
-function is_gen_bus(network::PowerGraphBase, bus_id::Any)
+function is_gen_bus(network::PowerGraphBase, bus_id::String)
     return is_gen_bus(network.mpc, bus_id)
 end
 
-function is_indicator(network::PowerGraphBase, f_bus::Any, t_bus::Any)
+function is_indicator(network::PowerGraphBase, f_bus::String, t_bus::String)
 	is_indicator(network.mpc, f_bus, t_bus)
 end
 
@@ -184,11 +187,11 @@ function is_transformer(network::PowerGraphBase, f_bus, t_bus)
 	is_transformer(network.mpc, f_bus, t_bus)
 end
 
-function is_neighbor_switch(network::PowerGraphBase, f_bus::Any, t_bus::Any)
+function is_neighbor_switch(network::PowerGraphBase, f_bus::String, t_bus::String)
 	is_neighbor_switch(network.mpc, f_bus, t_bus)
 end
 
-function is_neighbor_indicator(network::PowerGraphBase, f_bus::Any, t_bus::Any)
+function is_neighbor_indicator(network::PowerGraphBase, f_bus::String, t_bus::String)
 	is_neighbor_indicator(network.mpc, f_bus, t_bus)
 end
 
@@ -197,7 +200,7 @@ end
 
     Returns the π-equivalent of a line segment.
 """
-function get_π_equivalent(network::PowerGraphBase, from_bus::Any, to_bus::Any)::π_segment
+function get_π_equivalent(network::PowerGraphBase, from_bus::String, to_bus::String)::π_segment
     branch = get_branch_data(network, from_bus, to_bus)
     if nrow(branch)>1
         @warn string("The branch ", repr(from_bus), "-", repr(to_bus),
@@ -264,15 +267,19 @@ function n_vertices(network::PowerGraphBase)::Int
     return nv(network.G)
 end
 
-function take_out_line!(network::PowerGraphBase, id::Int)
+function take_out_line!(network::PowerGraphBase, id::String)
 	take_out_line!(network.mpc, id)
-    branch = get_branch(network.mpc, id)
-    rem_edge!(network.G, branch.f_bus, branch.t_bus)
+    branches = get_branch(network.mpc, id)
+	for branch in eachrow(branches)
+		rem_edge!(network.G, network.G[branch.f_bus, :name],
+				  network.G[branch.t_bus, :name])
+	end
 end
 
-function put_back_line!(network::PowerGraphBase, id::Int)
+function put_back_line!(network::PowerGraphBase, id::String)
     branch = get_branch(network.mpc, id)
-    add_edge!(network.G, branch.f_bus, branch.t_bus)
+	add_edge!(network.G, network.G[branch.f_bus, :name],
+			  network.G[branch.t_bus, :name])
 end
 
 function get_line_lims_pu(network::PowerGraphBase)::Array{Float64}
