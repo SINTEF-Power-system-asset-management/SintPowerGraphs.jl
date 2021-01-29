@@ -1,2 +1,2 @@
-bus,Pg,Qg,Gs,Bs,area_num,Qmax,Qmin,Vg,mBase,status,Pmax,Pmax
+ID,Pg,Qg,Gs,Bs,area_num,Qmax,Qmin,Vg,mBase,status,Pmax,Pmax
 321,0.0,0.0,0.0,0.0,1,0.0,1.0,0.0,0.0,0,0.0,0.0

@@ -1,4 +1,4 @@
-bus,demand,reference_demand,agriculture,households,industry,business_trade,public_services,el_industry,number_of_customers
+ID,demand,reference_demand,agriculture,households,industry,business_trade,public_services,el_industry,number_of_customers
 1,14.978995433789954,31.2727718353271,0.1063818436776003,0.8936181563223997,0.0,0.0,0.0,0.0,8.0
 2,24.850228310502285,52.6953125,0.0,1.0,0.0,0.0,0.0,0.0,10.0
 3,54.02294520547945,109.671112060547,0.29353120291775225,0.7064687970822477,0.0,0.0,0.0,0.0,18.0
