@@ -56,6 +56,9 @@ function Case(fname::String)::Case
 	mpc = Case()
 	conf = TOML.parsefile(fname)
 	dir = splitdir(fname)[1]
+	if !isabspath(dir)
+		dir = "."
+	end
 	for (field, file) in conf["files"]
 		 temp = CSV.File(joinpath(dir, file)) |> DataFrame
 		# Convert IDs to string
