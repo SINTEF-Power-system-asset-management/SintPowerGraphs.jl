@@ -88,7 +88,7 @@ function merge_line_segments(network::RadialPowerGraph;
 				for (field, columns) in aggregators
 					for (column, data) in columns
 						if is_branch_type_in_graph(network, field, f_bus, t_bus)
-							agg = aggregators[field][column]+get_branch_data(network, field, column, f_bus, t_bus)
+							agg = aggregators[field][column]+get_branch_data(network, field, column, f_bus, t_bus)[1]
 						else
 							agg = aggregators[field][column]
 						end

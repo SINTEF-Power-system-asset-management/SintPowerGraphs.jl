@@ -115,7 +115,7 @@ function get_branch_data(network::PowerGraphBase, f_bus::String, t_bus::String):
 end
 
 function get_branch_data(network::PowerGraphBase, type::Symbol, f_bus::String,
-						 t_bus::String)::DataFrameRow
+						 t_bus::String)::DataFrame
 	get_branch_data(network.mpc, type, f_bus, t_bus)
 end
 
@@ -124,8 +124,18 @@ function get_branch_data(network::PowerGraphBase, type::Symbol, column::Symbol, 
 	get_branch_data(network.mpc, type, column, f_bus, t_bus)
 end
 
+function get_reliability_data(network::PowerGraphBase, f_bus::String, t_bus::String)::DataFrame
+	temp = get_branch_data(network, :reldata, f_bus, t_bus)
+	if nrow(temp) == 0
+		@warn string("Branch ", f_bus, "-", t_bus, " does not have reliablity data")
+		@warn "Returning zero filled reliablity data."
+		push!(temp, zeros(ncol(temp)))
+	end
+	return temp
+end
+
 function is_branch_type_in_graph(network::PowerGraphBase, type::Symbol, f_bus::String,
-								 t_bus::String)
+								 t_bus::String)::Bool
 	is_branch_type_in_case(network.mpc, type, f_bus, t_bus)
 end
 
