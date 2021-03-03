@@ -53,7 +53,7 @@ test_island = PowerGraph(joinpath(@__DIR__, "cases", "island_test.toml"))
 	@test is_switch(test, "4", "7")
 	@test ~is_switch(test, "4", "9")
 	@test ~is_indicator(test, "4", "7")
-	@test get_branch_data(test, :reldata, :fault_rate, "1", "2") == 0.01
+	@test get_branch_data(test, :reldata, :fault_rate, "1", "2")[1] == 0.01
 	@test size(get_incidence_matrix(four_area)) == (30,25)
 	take_out_line!(test, "2")
 	@test Array[[1, 2], [3, 4, 5, 6, 7]] == get_islanded_buses(test)
@@ -62,5 +62,9 @@ test_island = PowerGraph(joinpath(@__DIR__, "cases", "island_test.toml"))
 	@test A_island_test == get_incidence_matrix(test_island, true)
 	A_bd, bus_mapping, branch_mapping = get_island_incidence_matrix(test_island)
 	@test A_island_bd == A_bd
+
+	@test get_reliability_data(test_4_bus, "1", "2").f_rate[1] == 1
+	@test get_reliability_data(test_4_bus, "1", "3").f_rate[1] == 0
+
 
 end

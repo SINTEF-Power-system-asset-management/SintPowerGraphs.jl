@@ -26,7 +26,7 @@ red_net = merge_line_segments(test,
 	@test is_gen_bus(red_net, "2")
 	@test get_π_equivalent(red_net, "3", "6") == (get_π_equivalent(test, "3", "5")+get_π_equivalent(test, "5", "6"))
 	@test is_switch(red_net, "4", "7")
-	@test 0.01 + 0.01 == get_branch_data(red_net, :reldata, :fault_rate, "3", "4")
+	@test 0.01 + 0.01 == get_branch_data(red_net, :reldata, :fault_rate, "3", "4")[1]
 	@test get_branch_data(test, :reldata, :length, "3", "5") + get_branch_data(test, :reldata, :length, "5", "6") == get_branch_data(red_net, :reldata, :length, "3", "6")
 	@test is_transformer(red_net, "1", "2")
 end

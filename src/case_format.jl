@@ -177,12 +177,11 @@ function get_branch(mpc::Case, id::String)::DataFrame
     return mpc.branch[mpc.branch.ID.==id,:]
 end
 
-function get_branch_data(mpc::Case, type::Symbol, f_bus::String, t_bus::String)::DataFrameRow
-	get_branch_type(getfield(mpc, type), f_bus, t_bus)[1,:]
+function get_branch_data(mpc::Case, type::Symbol, f_bus::String, t_bus::String)::DataFrame
+	get_branch_type(getfield(mpc, type), f_bus, t_bus)
 end
 
 function get_branch_data(mpc::Case, type::Symbol, column::Symbol, f_bus::String, t_bus::String)
-
 	get_branch_data(mpc, type, f_bus, t_bus)[column]
 end
 
