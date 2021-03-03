@@ -182,7 +182,6 @@ function get_branch_data(mpc::Case, type::Symbol, f_bus::String, t_bus::String):
 end
 
 function get_branch_data(mpc::Case, type::Symbol, column::Symbol, f_bus::String, t_bus::String)
-
 	get_branch_data(mpc, type, f_bus, t_bus)[column]
 end
 
