@@ -103,7 +103,7 @@ function merge_line_segments(network::RadialPowerGraph;
 												 field,
 												 from_bus,
 												 t_bus,
-												 temp)
+												 temp[1, :])
 								end
 							else
 								set_branch_data!(red_net,
@@ -168,7 +168,7 @@ function merge_line_segments(network::RadialPowerGraph;
 			if  !isempty(aggregators)
 				for (field, columns) in aggregators
 					for (column, data) in columns
-						aggregators[field][column] += get_branch_data(network, field, column, f_bus, t_bus)
+						aggregators[field][column] += get_branch_data(network, field, column, f_bus, t_bus)[1]
 					end
 				end
 			end

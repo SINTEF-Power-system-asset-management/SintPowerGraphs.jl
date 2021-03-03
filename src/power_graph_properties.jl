@@ -129,7 +129,21 @@ function get_reliability_data(network::PowerGraphBase, f_bus::String, t_bus::Str
 	if nrow(temp) == 0
 		@warn string("Branch ", f_bus, "-", t_bus, " does not have reliablity data")
 		@warn "Returning zero filled reliablity data."
-		push!(temp, zeros(ncol(temp)))
+		row = []
+		for name in names(temp)
+			if name == "f_bus"
+				push!(row, f_bus)
+			elseif name == "t_bus"
+				push!(row, t_bus)
+			else
+				if isa(network.mpc.reldata[1, name], Number)
+					append!(row, 0)
+				else
+					append!(row, "")
+				end
+			end
+		end
+		push!(temp, row)
 	end
 	return temp
 end
