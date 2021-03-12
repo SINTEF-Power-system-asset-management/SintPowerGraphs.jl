@@ -1,9 +1,20 @@
-function graphMap(mpc, G, ref_bus) #network::RadialPowerGraph)
+using CSV
+
+function graphMap(mpc, G, ref_bus, filtered_branches=DataFrame(element=[], f_bus=[], t_bus=[], tag=[])) #network::RadialPowerGraph)
     mg = MetaGraph(G)
+    islanded_nodes = apply_assumptions_to_make_network_converge(G)
+    islanded_nodes_names = mpc.bus[islanded_nodes,:ID]
     for bus in eachrow(mpc.bus)
-        set_prop!(mg, DataFrames.row(bus), :name, string(bus.ID))
+        name = string(bus.ID)
+        set_prop!(mg, DataFrames.row(bus), :name, name)
     end
     set_indexing_prop!(mg, :name)
+    for node in islanded_nodes
+        bus = mpc.bus[node,:ID]
+        node_number = mg[string(bus), :name]
+        rem_vertex!(mg,node_number)
+    end
+    
     for branch in eachrow(mpc.branch)
         # I set the following rule for the property stored on each edge:
         # :switch = [-1 => no switch;
@@ -11,18 +22,32 @@ function graphMap(mpc, G, ref_bus) #network::RadialPowerGraph)
         #            1  => closed; # information stored on column switch.closed[1]
         #            2  => breaker; # information stored on column switch.breaker[1]
         #            ]
-        if is_switch(mpc, branch.f_bus, branch.t_bus)
-            switch = get_switch(mpc, branch.f_bus, branch.t_bus)
-            if switch.breaker[1] == "True"
-                # it is a breaker
-                set_prop!(mg, mg[string(branch.f_bus),:name], mg[string(branch.t_bus),:name], :switch, 2)
-            else
-                # it is a switch (it can be open or closed)
-                set_prop!(mg, mg[string(branch.f_bus),:name], mg[string(branch.t_bus),:name], :switch, if switch.closed[1]=="True" 1 else 0 end)
+        if (branch.f_bus in islanded_nodes_names) || (branch.t_bus in islanded_nodes_names)
+            # branches should be automatically deleted when the two terminals belonging to the island are eliminated
+            continue
+        elseif !isempty(filtered_branches[.&(filtered_branches[!,:f_bus].==branch.f_bus,filtered_branches[!,:t_bus].==branch.t_bus),:])
+            # Lines on filter are removed, switches are opened
+            tag = filtered_branches[.&(filtered_branches[!,:f_bus].==branch.f_bus,filtered_branches[!,:t_bus].==branch.t_bus),:].tag[1]
+            if tag == "L"
+                rem_edge!(mg,mg[string(branch.f_bus), :name],mg[string(branch.t_bus), :name])
+            elseif tag == "S"
+                switch = get_switch(mpc, branch.f_bus, branch.t_bus)
+                set_prop!(mg, mg[string(branch.f_bus),:name], mg[string(branch.t_bus),:name], :switch, 0)
             end
         else
-            # it is a normal branch
-            set_prop!(mg, mg[string(branch.f_bus),:name], mg[string(branch.t_bus),:name], :switch, -1)
+            if is_switch(mpc, branch.f_bus, branch.t_bus)
+                switch = get_switch(mpc, branch.f_bus, branch.t_bus)
+                if (switch.breaker[1] == "True" || switch.breaker[1] == 1)
+                    # it is a breaker
+                    set_prop!(mg, mg[string(branch.f_bus),:name], mg[string(branch.t_bus),:name], :switch, 2)
+                else
+                    # it is a switch (it can be open or closed)
+                    set_prop!(mg, mg[string(branch.f_bus),:name], mg[string(branch.t_bus),:name], :switch, if (switch.closed[1]=="True" || switch.closed[1]==1) 1 else 0 end)
+                end
+            else
+                # it is a normal branch
+                set_prop!(mg, mg[string(branch.f_bus),:name], mg[string(branch.t_bus),:name], :switch, -1)
+            end
         end
     end
     meta_radial = subgraph(mg, ref_bus)
@@ -84,8 +109,9 @@ function subgraph(g::MetaGraph, start::Int = 0)::MetaDiGraph
 
     for e in edges(g_copy)
         # I sort src and tar for keeping the order of discovery in BFS
-        src, tar = sort([get(reindex, e.src, nothing), get(reindex, e.dst, nothing)])
-        if !(nothing in [src, tar])
+        # -1 is used as result for bus not found
+        src, tar = sort([get(reindex, e.src, -1), get(reindex, e.dst, -1)])
+        if !(-1 in [src, tar])
             #if get_prop(g, e, :switch) != 0 
             add_edge!(newgraph, src, tar)
             set_prop!(newgraph, src, tar, :switch, get_prop(g_copy, e.src, e.dst, :switch))
@@ -93,4 +119,19 @@ function subgraph(g::MetaGraph, start::Int = 0)::MetaDiGraph
         end
     end
     return newgraph
+end
+
+function apply_assumptions_to_make_network_converge(G)
+    islands = Dict()
+    for island in connected_components(G)
+        push!(islands, length(island)=> island)
+    end
+    keymax = maximum(keys(islands))
+    islanded_nodes = []
+    for (key, nodes) in islands
+        if key != keymax
+            append!(islanded_nodes, nodes)
+        end
+    end
+    return islanded_nodes
 end

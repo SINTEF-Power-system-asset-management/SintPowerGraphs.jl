@@ -168,7 +168,11 @@ function get_branch(mpc::Case, id::Int)::DataFrameRow
 end
 
 function get_branch_data(mpc::Case, type::Symbol, f_bus::Any, t_bus::Any)::DataFrameRow
-	get_branch_type(getfield(mpc, type), f_bus, t_bus)[1,:]
+	if typeof(getfield(mpc,type).f_bus[1])==Int
+		get_branch_type(getfield(mpc, type), parse(Int64,f_bus), parse(Int64,t_bus))[1,:]
+	else
+		get_branch_type(getfield(mpc, type), f_bus, t_bus)[1,:]
+	end
 end
 
 function get_branch_data(mpc::Case, type::Symbol, column::Symbol, f_bus::Any, t_bus::Any)
