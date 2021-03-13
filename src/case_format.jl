@@ -70,11 +70,12 @@ function Fasad_Case(fname::String)::Fasad_Case
 	conf = TOML.parsefile(fname)
 	dir = splitdir(fname)[1]
 	for (field, files) in conf["files"]
+		df = DataFrame()
 		for file in files # instead of setfield I should use an append-style command
-			setfield!(mpc_fasad, Symbol(field), CSV.File(joinpath(dir, file)) |> DataFrame)
+			df = vcat(df, CSV.File(joinpath(dir, file)) |> DataFrame)
 		end
+		setfield!(mpc_fasad, Symbol(field), df)
 	end
-
 	return mpc_fasad
 end
 

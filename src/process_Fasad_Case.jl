@@ -37,7 +37,7 @@ function f_process_transformers(mpc, mpc_temp)
     trafos_columns = ["ID", "f_bus", "t_bus", "rateA"] 
     mpc.transformer = DataFrame([Symbol(col) => Any[] for col in trafos_columns])
     for row in collect(eachrow(mpc_temp.transformers))
-        if row["transformer_type"]=="secondary"
+        if row["transformer_type"]=="secondary" #|| row["transformer_type"]=="distribution"
             trafos_entry = [row["name"], row["from"], row["to"], row["apparent_power_limit"]]
             push!(mpc.transformer, trafos_entry)
         else
