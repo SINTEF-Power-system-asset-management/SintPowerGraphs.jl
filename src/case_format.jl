@@ -179,7 +179,12 @@ function get_branch_data(mpc::Case, type::Symbol, f_bus::String, t_bus::String):
 end
 
 function get_branch_data(mpc::Case, type::Symbol, column::Symbol, f_bus::String, t_bus::String)
-	get_branch_data(mpc, type, f_bus, t_bus)[!, column]
+	temp = get_branch_data(mpc, type, f_bus, t_bus)
+	if String(column) in names(temp)
+		return temp[column]
+	else
+		return nothing
+	end
 end
 
 function is_branch_type_in_case(df::DataFrame, f_bus::String, t_bus::String)::Bool
