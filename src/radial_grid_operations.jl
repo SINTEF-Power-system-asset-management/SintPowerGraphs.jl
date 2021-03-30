@@ -98,7 +98,7 @@ function merge_line_segments(network::RadialPowerGraph;
 													   field,
 													   f_bus,
 													   t_bus))
-								temp[column] = agg
+								temp[!, column] = agg
 									push_branch!(red_net,
 												 field,
 												 from_bus,
