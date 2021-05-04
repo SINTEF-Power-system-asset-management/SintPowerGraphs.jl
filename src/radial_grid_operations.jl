@@ -183,11 +183,13 @@ function remove_zero_impedance_lines(network::PowerGraphBase)
     return remove_low_impedance_lines(network, 0.0)
 end
 
-function remove_low_impedance_lines(network_orig::PowerGraphBase, tol::Float64=0.0)
+"""Remove lines from a case. Whether or not a line should be removed is determined by the function func, and
+the tolerance tol."""
+function remove_lines_by_value(network_orig::PowerGraphBase, func::Function, tol::Float64=0.0, keep_switches::Bool=false)
     network = deepcopy(network_orig.mpc)
     delete_rows = []
     for branch in eachrow(network.branch)
-        if series_impedance_norm(get_π_equivalent(branch))<=tol
+		if !(keep_switches && is_switch(branch)) && func(branch) <= tol
             t_bus = branch.t_bus
             f_bus = branch.f_bus
             append!(delete_rows, getfield(branch, :row))
@@ -210,4 +212,9 @@ function remove_low_impedance_lines(network_orig::PowerGraphBase, tol::Float64=0
 
     G, ref_bus = read_case!(network)
     return PowerGraph(G, network, ref_bus)
+end
+
+
+function remove_low_impedance_lines(network_orig::PowerGraphBase, tol::Float64=0.0)
+	remove_lines_by_value(network_orig, series_impedance_norm, tol)
 end

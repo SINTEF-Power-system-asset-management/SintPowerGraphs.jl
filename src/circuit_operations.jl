@@ -43,3 +43,7 @@ end
 function series_impedance_norm(π::π_segment)::Float64
     return abs(π.Z)
 end
+
+function series_impedance_norm(branch::DataFrameRow)::Float64
+	return series_impedance_norm(get_π_equivalent(branch))
+end
