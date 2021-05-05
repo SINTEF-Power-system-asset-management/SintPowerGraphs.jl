@@ -19,11 +19,11 @@ export π_segment, is_zero_impedance_line, series_impedance_norm
 include("graph_functions.jl")
 export traverse
 
-include("process_Fasad_Case.jl")
-export process_Fasad_Case
-
 include("utility_methods.jl")
 export swapcols!, swaprows!
+
+include("process_Fasad_Case.jl")
+export process_fasad_case
 
 #include("plot_graphs.jl")
 #export plot_to_web

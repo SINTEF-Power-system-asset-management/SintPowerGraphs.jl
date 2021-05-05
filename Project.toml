@@ -6,6 +6,11 @@ version = "0.1.0"
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+<<<<<<< HEAD
+=======
+Fontconfig = "186bb1d3-e1f7-5a2c-a377-96d770f13627"
+GraphDataFrameBridge = "3c71623a-a715-5176-9801-629b201a4880"
+>>>>>>> f1921360468cda0f632873c68d600aee03768ced
 LightGraphs = "093fc24a-ae57-5d10-9952-331d41423f4d"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 MetaGraphs = "626554b9-1ddb-594c-aa3c-2596fe9399a5"

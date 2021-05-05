@@ -24,6 +24,7 @@ mutable struct Fasad_Case
 	delivery_points::DataFrame
 	fault_indicators::DataFrame
 	gen_cost::DataFrame
+	trans_node::String
 end
 
 function Case()::Case
@@ -49,7 +50,9 @@ function Fasad_Case()::Fasad_Case
 	delivery_points = DataFrame()
 	fault_indicators = DataFrame()
     gencost = DataFrame()
-    Fasad_Case(baseMVA, transformers, lines, switchgear, nodes, delivery_points, fault_indicators, gencost)
+	trans_node = ""
+    Fasad_Case(baseMVA, transformers, lines, switchgear, nodes, delivery_points, fault_indicators, gencost,
+			   trans_node)
 end
 
 function Case(fname::String)::Case
@@ -76,11 +79,14 @@ function Fasad_Case(fname::String)::Fasad_Case
 	mpc_fasad = Fasad_Case()
 	conf = TOML.parsefile(fname)
 	dir = splitdir(fname)[1]
+	println(dir)
 	for (field, files) in conf["files"]
 		for file in files # instead of setfield I should use an append-style command
+			println(file)
 			setfield!(mpc_fasad, Symbol(field), CSV.File(joinpath(dir, file)) |> DataFrame)
 		end
 	end
+	mpc_fasad.trans_node = conf["transmission_grid"]
 
 	return mpc_fasad
 end

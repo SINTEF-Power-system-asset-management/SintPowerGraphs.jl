@@ -1,4 +1,5 @@
 using LightGraphs
+using GraphDataFrameBridge
 using MetaGraphs
 using TOML
 
@@ -42,14 +43,13 @@ function PowerGraph(case_file::String)
 end
 
 function read_case!(mpc::Case)
-    G = MetaDiGraph(nrow(mpc.bus))
+	G = MetaDiGraph(mpc.branch, :f_bus, :t_bus)
 
     ref_bus = NaN
 	for bus in eachrow(mpc.bus)
         if bus[:type] == 3
 			ref_bus = string(DataFrames.row(bus))
         end
-        set_prop!(G, DataFrames.row(bus), :name, bus.ID)
     end
     
     set_indexing_prop!(G, :name)
@@ -70,9 +70,6 @@ function read_case!(mpc::Case)
 	end
     
 	for branch in eachrow(mpc.branch)
-		# First add the edge to the graph
-		add_edge!(G, G[string(branch.f_bus), :name], G[string(branch.t_bus), :name])
-
         # I set the following rule for the property stored on each edge:
         # :switch = [-1 => no switch;
         #            0  => open; # information stored on column switch.closed[1]

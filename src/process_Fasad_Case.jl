@@ -1,9 +1,13 @@
-function process_Fasad_Case(mpc_temp::Fasad_Case, slack_bus)
+function process_fasad_case(fname::String)
+	return process_fasad_case(Fasad_Case(fname))
+end
+
+function process_fasad_case(mpc_temp::Fasad_Case)
     mpc = Case()
     f_process_lines(mpc, mpc_temp)
     f_process_switch(mpc, mpc_temp)
     f_process_transformers(mpc, mpc_temp)
-    f_process_nodes(mpc, mpc_temp, slack_bus)
+    f_process_nodes(mpc, mpc_temp, mpc_temp.trans_node)
     return mpc
 end
 
