@@ -27,7 +27,10 @@ function RadialPowerGraph()
 end
 
 function RadialPowerGraph(case_file::String)
-    mpc = Case(case_file::String)
+	RadialPowerGraph(Case(case_file::String))
+end
+
+function RadialPowerGraph(mpc::Case)
     G, ref_bus = read_case!(mpc)
 	radial = subgraph(G, G[ref_bus, :name])
     RadialPowerGraph(G, mpc, ref_bus, radial)
@@ -48,7 +51,7 @@ function read_case!(mpc::Case)
     ref_bus = NaN
 	for bus in eachrow(mpc.bus)
         if bus[:type] == 3
-			ref_bus = string(DataFrames.row(bus))
+			ref_bus = string(bus.ID)
         end
     end
     

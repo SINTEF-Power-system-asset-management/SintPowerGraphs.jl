@@ -1,7 +1,7 @@
 module PowerGraphs
 
 include("case_format.jl")
-export Case, to_csv, update_ID!, get_n_buses, to_ppc, delete_bus!
+export Case, to_csv, update_ID!, get_n_buses, to_ppc, delete_bus!, Fasad_Case
 
 include("power_graph_types.jl")
 
