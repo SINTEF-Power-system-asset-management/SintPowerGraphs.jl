@@ -56,22 +56,21 @@ function Fasad_Case()::Fasad_Case
 end
 
 function Case(fname::String)::Case
-	mpc = Case()
-	conf = TOML.parsefile(fname)
-	dir = splitdir(fname)[1]
-	for (field, file) in conf["files"]
-		 temp = CSV.File(joinpath(dir, file)) |> DataFrame
-		# Convert IDs to string
-		 for key in ["ID", "f_bus", "t_bus"]
-			 if key in names(temp)
-				 temp[!, key] = string.(temp[:, key])
-			 end
-		 end
-		 setfield!(mpc, Symbol(field), temp)
-	end
-	mpc.baseMVA = conf["configuration"]["baseMVA"]
-
-	return mpc
+    mpc = Case()
+    conf = TOML.parsefile(fname)
+    dir = splitdir(fname)[1]
+    for (field, file) in conf["files"]
+         temp = CSV.File(joinpath(dir, file)) |> DataFrame
+        # Convert IDs to string
+         for key in ["ID", "f_bus", "t_bus"]
+             if key in names(temp)
+                 temp[!, key] = string.(temp[:, key])
+             end
+         end
+         setfield!(mpc, Symbol(field), temp)
+    end
+    mpc.baseMVA = conf["configuration"]["baseMVA"]
+    return mpc
 end
 
 function Fasad_Case(fname::String)::Fasad_Case
@@ -151,20 +150,20 @@ end
 
 function get_branch_type(branch::DataFrame, f_bus::String, t_bus::String)::DataFrame
     temp = branch[(branch.f_bus .== f_bus) .&
-                      (branch.t_bus .== t_bus),:]
-	if isempty(temp)
-		temp = branch[(branch.t_bus .== f_bus) .&
-               (branch.f_bus .== t_bus),:]
-		   end
+                  (branch.t_bus .== t_bus),:]
+    if isempty(temp)
+        temp = branch[(branch.t_bus .== f_bus) .&
+       (branch.f_bus .== t_bus),:]
+   end
    return temp
 end
 
 function get_branch(mpc::Case, f_bus::String, t_bus::String)::DataFrame
-	get_branch_type(mpc.branch, f_bus, t_bus)
+    get_branch_type(mpc.branch, f_bus, t_bus)
 end
 
 function get_switch(mpc::Case, f_bus::String, t_bus::String)::DataFrame
-	get_branch_type(mpc.switch, f_bus, t_bus)
+    get_branch_type(mpc.switch, f_bus, t_bus)
 end
 
 function get_indicator(mpc::Case, f_bus::String, t_bus::String)::DataFrame
@@ -376,21 +375,52 @@ function to_ppc(mpc::Case)::Dict{String, Any}
 	return case
 end
 
+
+"""Returns all branch data in one dataframe.
+Merges the reldata, transformer, switches, and branch dataframes."""
+function branch_report(mpc::Case)::DataFrame
+    df = deepcopy(mpc.branch)
+    insertcols!(df, ncol(df)+1, :length => 0.0)
+    insertcols!(df, ncol(df)+1, :switch => false)
+    insertcols!(df, ncol(df)+1, :remote => false)
+    insertcols!(df, ncol(df)+1, :transformer => false)
+    insertcols!(df, ncol(df)+1, :indicator => false)
+    for branch in eachrow(df)
+        if is_switch(mpc, branch.f_bus, branch.t_bus)
+            branch.switch = true
+            switch = get_switch(mpc, branch.f_bus, branch.t_bus)
+            branch.remote = switch.remote[1]
+        elseif is_transformer(mpc, branch.f_bus, branch.t_bus)
+            branch.transformer = true
+        elseif is_indicator(mpc, branch.f_bus, branch.t_bus)
+            branch.indicator = true
+        else
+            rel = mpc.reldata[(mpc.reldata.f_bus .== branch.f_bus) .& (mpc.reldata.t_bus .== branch.t_bus), :length]
+            if isempty(rel)
+                rel = mpc.reldata[(mpc.reldata.f_bus .== branch.t_bus) .& (mpc.reldata.t_bus .== branch.f_bus), :length]
+            end
+            branch.length = rel[1]
+        end
+    end
+    return df
+end
+
+
 """ Returns the number of buses in the case."""
 function get_n_buses(mpc::Case)::Int64
-	nrow(mpc.bus)
+    nrow(mpc.bus)
 end
 
 """ Returns the row number of a bus given by id"""
 function get_bus_row(mpc::Case, id)::Int64
-	row = findall(mpc.bus.ID .== id)
-	if length(row) == 0
-		error(string("Bus with ID ", repr(id), " not found."))
-	elseif length(row) > 1
-		error(string("Multiple buses with the ID ", repr(id)))
-	else
-		return row[1]
-	end
+    row = findall(mpc.bus.ID .== id)
+    if length(row) == 0
+        error(string("Bus with ID ", repr(id), " not found."))
+    elseif length(row) > 1
+        error(string("Multiple buses with the ID ", repr(id)))
+    else
+        return row[1]
+    end
 end
 
 """ Sets branch to out of service"""
