@@ -8,6 +8,13 @@ function process_fasad_case(mpc_temp::Fasad_Case)
     f_process_switch(mpc, mpc_temp)
     f_process_transformers(mpc, mpc_temp)
     f_process_nodes(mpc, mpc_temp, mpc_temp.trans_node)
+	
+	# In case the slack bus is not defined in the bus data sheet
+    nodes_entry = [mpc_temp.trans_node, 3, 0, 0, 0, 0, 0, 1, 0, 22, 0, 1.2, 0.9]
+	if mpc_temp.trans_node ∉ mpc.bus.ID
+		push!(mpc.bus, nodes_entry)
+	end
+
     return mpc
 end
 
@@ -17,7 +24,7 @@ function f_process_lines(mpc, mpc_temp)
     mpc.branch = DataFrame([Symbol(col) => Any[] for col in branches_columns])
     mpc.reldata = DataFrame([Symbol(col) => Any[] for col in reldata_columns])
     for row in collect(eachrow(mpc_temp.lines))
-        lines_entry = [row["from"], row["to"], 0, 0, 0, 0, 0, 0, 0, 0]
+		lines_entry = [row["from"], row["to"], 0, 0, 0, row["apparent_power_limit"], 0, 0, 0, 0]
         reldata_entry = [size(mpc.branch)[1]+1, row["from"], row["to"], row["repair_time"]/60, row["failure_frequency_temporary"], row["failure_frequency_permanent"],0, 0.02, row["apparent_power_limit"]]
         push!(mpc.branch, lines_entry)
         push!(mpc.reldata, reldata_entry)
