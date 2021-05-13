@@ -19,12 +19,12 @@ function process_fasad_case(mpc_temp::Fasad_Case)
 end
 
 function f_process_lines(mpc, mpc_temp)
-    branches_columns = ["f_bus", "t_bus", "r", "x", "b", "rateA", "rateB", "rateC", "ratio", "angle"] 
+    branches_columns = ["f_bus", "t_bus", "r", "x", "b", "rateA", "rateB", "rateC", "ratio", "shift", "br_status"] 
     reldata_columns = ["ID", "f_bus", "t_bus", "repairTime", "temporaryFaultFrequency", "permanentFaultFrequency", "sectioningTime", "temporaryFaultTime", "capacity"]
     mpc.branch = DataFrame([Symbol(col) => Any[] for col in branches_columns])
     mpc.reldata = DataFrame([Symbol(col) => Any[] for col in reldata_columns])
     for row in collect(eachrow(mpc_temp.lines))
-		lines_entry = [row["from"], row["to"], 0, 0, 0, row["apparent_power_limit"], 0, 0, 0, 0]
+		lines_entry = [row["from"], row["to"], 0, 0, 0, row["apparent_power_limit"], 0, 0, 0, 0, 1]
         reldata_entry = [size(mpc.branch)[1]+1, row["from"], row["to"], row["repair_time"]/60, row["failure_frequency_temporary"], row["failure_frequency_permanent"],0, 0.02, row["apparent_power_limit"]]
         push!(mpc.branch, lines_entry)
         push!(mpc.reldata, reldata_entry)
@@ -36,7 +36,7 @@ function f_process_switch(mpc, mpc_temp)
     mpc.switch = DataFrame([Symbol(col) => Any[] for col in switches_columns])
     for row in collect(eachrow(mpc_temp.switchgear))
         switches_entry = [row["from"], row["to"], if row["switchgear_type"]=="breaker" "True" else "False" end, row["closed"]]
-        lines_entry = [row["from"], row["to"], 0, 0, 0, 0, 0, 0, 0, 0]
+        lines_entry = [row["from"], row["to"], 0, 0, 0, 0, 0, 0, 0, 0, 1]
         reldata_entry = [size(mpc.branch)[1]+1, row["from"], row["to"], 0, 0, 0,row["switching_time"]/60, 0, 0]
         push!(mpc.switch, switches_entry)
         push!(mpc.branch, lines_entry)
@@ -55,7 +55,7 @@ function f_process_transformers(mpc, mpc_temp)
             # I see that fasad does not explicitly declare the secondary bus of transformer as node, I add it manually
             push!(mpc_temp.nodes, [row["to"]])
         end
-        lines_entry = [row["from"], row["to"], 0, 0, 0, 0, 0, 0, 0, 0]
+        lines_entry = [row["from"], row["to"], 0, 0, 0, 0, 0, 0, 0, 0, 1]
         reldata_entry = [size(mpc.branch)[1]+1, row["from"], row["to"], 0, 0, 0, 0, 0.02, row["apparent_power_limit"]]
         push!(mpc.branch, lines_entry)
         push!(mpc.reldata, reldata_entry)

@@ -175,8 +175,7 @@ function merge_line_segments(network::RadialPowerGraph;
         end
         index += 1
     end
-    red_net.radial = MetaDiGraph(red_net.G)
-    return red_net
+	return RadialPowerGraph(red_net.mpc)
 end
 
 function remove_zero_impedance_lines(network::PowerGraphBase)
@@ -185,36 +184,84 @@ end
 
 """Remove lines from a case. Whether or not a line should be removed is determined by the function func, and
 the tolerance tol."""
-function remove_lines_by_value(network_orig::PowerGraphBase, func::Function, tol::Float64=0.0, keep_switches::Bool=false)
-    network = deepcopy(network_orig.mpc)
-    delete_rows = []
-    for branch in eachrow(network.branch)
-		if !(keep_switches && is_switch(branch)) && func(branch) <= tol
-            t_bus = branch.t_bus
-            f_bus = branch.f_bus
-            append!(delete_rows, getfield(branch, :row))
-            # Ensure that swing bus is connected
-            t_bus_type = network.bus[network.bus.ID .== t_bus, :type][1]
-            if  t_bus_type == 3
-                network.bus[f_bus, :type] = 3
-            end
-            # Connect the buses that were disconnected
-            network.branch[network.branch.f_bus .== t_bus, :f_bus] .= f_bus
-            network.branch[network.branch.t_bus .== t_bus, :t_bus] .= f_bus
-            
-            # Move what may have been on the bus
-            network.gen[network.gen.ID .== t_bus, :ID] .= f_bus
-            
-            delete_bus!(network, t_bus)
+function remove_lines_by_value(network_orig::PowerGraphBase, func::Function, tol::Float64=0.0)::RadialPowerGraph
+	network = RadialPowerGraph()
+	network.mpc.branch = copy(network_orig.mpc.branch)
+	network.mpc.bus = copy(network_orig.mpc.bus)
+	network.mpc.gen = copy(network_orig.mpc.gen)
+	network.mpc.switch = copy(network_orig.mpc.switch)
+	network.mpc.reldata = copy(network_orig.mpc.reldata)
+	network.mpc.loaddata = copy(network_orig.mpc.loaddata)
+	network.radial = copy(network_orig.radial)
+    delete_branch = []
+	direct_case!(network)
+
+	for (idx, branch) in enumerate(eachrow(network.mpc.branch))
+		f_bus = branch.f_bus
+		t_bus = branch.t_bus
+
+		if  func(branch) <= tol
+			
+			# Find branch to delete
+			append!(delete_branch, idx)
+			
+			switch = get_switch(network.mpc, f_bus, t_bus)
+			is_closed = true
+			if nrow(switch) > 0
+				is_closed = switch.closed[1]
+			end
+
+			if is_closed
+				for element in [:branch, :reldata, :switch, :transformer]
+					df = getfield(network.mpc, element)
+					if "f_bus" ∈ names(df)
+						df[df.f_bus .== t_bus, :f_bus] .= f_bus
+						df[df.t_bus .== t_bus, :t_bus] .= f_bus
+					end
+				end
+				
+				# Ensure that swing bus is connected
+				t_bus_type = network.mpc.bus[network.mpc.bus.ID .== t_bus, :type][1]
+				if  t_bus_type == 3
+					network.mpc.bus[network.mpc.bus.ID .== f_bus, :type] .= 3
+				end
+				# Move what may have been on the bus
+				network.mpc.gen[network.mpc.gen.bus .== t_bus, :bus] .= f_bus
+				network.mpc.loaddata[network.mpc.loaddata.bus .== t_bus, :bus] .= f_bus
+				network.mpc.bus[network.mpc.bus.ID .== f_bus, :Pd] .= network.mpc.bus[network.mpc.bus.ID .== t_bus, :Pd]
+			end
         end
     end
-    delete!(network.branch, delete_rows)
+	delete!(network.mpc.branch, delete_branch)
+	buses = union(Set(network.mpc.branch.f_bus), Set(network.mpc.branch.t_bus)) # unique buses left
+	delete_buses = [bus for bus in setdiff(Set(network.mpc.bus.ID), buses)] # Buses that have been deleted
+	bus_idx = [findall(x->x==delete_buses[i], network.mpc.bus.ID)[1] for i in 1:length(delete_buses)] # Index of buses to delete
+	
+	delete!(network.mpc.bus, sort(bus_idx))
 
-    G, ref_bus = read_case!(network)
-    return PowerGraph(G, network, ref_bus)
+    network.G, ref_bus = read_case!(network.mpc)
+	network.radial = subgraph(network.G, network.G[ref_bus, :name])
+    return network
 end
 
 
 function remove_low_impedance_lines(network_orig::PowerGraphBase, tol::Float64=0.0)
 	remove_lines_by_value(network_orig, series_impedance_norm, tol)
+end
+
+"""Direct the case in the same direction as the radial"""
+function direct_case!(network::RadialPowerGraph)
+	for e in edges(network.radial)
+		f_bus = network.radial[src(e), :name]
+		t_bus = network.radial[dst(e), :name]
+
+		branch = get_branch_data(network.mpc, :branch, f_bus, t_bus)
+		
+		old_f = branch.f_bus
+		old_t = branch.t_bus
+		branch[!, :f_bus] .= f_bus
+		branch[!, :t_bus] .= t_bus
+		
+		set_branch!(network.mpc, old_f[1], old_t[1], branch)
+	end
 end

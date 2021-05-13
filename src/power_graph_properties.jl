@@ -62,7 +62,7 @@ function push_loaddata!(network::PowerGraphBase, data::DataFrameRow)
 end
 
 function push_loaddata!(network::PowerGraphBase, data::DataFrameRow, bus::String)
-    data[:ID] = bus
+    data[:bus] = bus
     push_loaddata!(network, data)
 end
 

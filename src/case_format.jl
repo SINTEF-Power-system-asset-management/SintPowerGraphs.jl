@@ -62,7 +62,7 @@ function Case(fname::String)::Case
     for (field, file) in conf["files"]
          temp = CSV.File(joinpath(dir, file)) |> DataFrame
         # Convert IDs to string
-         for key in ["ID", "f_bus", "t_bus"]
+         for key in ["ID", "bus", "f_bus", "t_bus"]
              if key in names(temp)
                  temp[!, key] = string.(temp[:, key])
              end
@@ -137,15 +137,15 @@ function get_bus!(mpc::Case, ID::String)::DataFrameRow
 end
 
 function get_loaddata(mpc::Case, bus_id::String)::DataFrame
-    return mpc.loaddata[mpc.loaddata.ID.==bus_id,:]
+    return mpc.loaddata[mpc.loaddata.bus.==bus_id,:]
 end
 
 function get_gen(mpc::Case, bus_id::String)::DataFrame
-    return mpc.gen[mpc.gen.ID.==bus_id,:]
+    return mpc.gen[mpc.gen.bus.==bus_id,:]
 end
 
 function get_gen!(mpc::Case, bus_id::String)::DataFrame
-    return mpc.gen[mpc.gen.ID.==bus_id, !]
+    return mpc.gen[mpc.gen.bus.==bus_id, !]
 end
 
 function get_branch_type(branch::DataFrame, f_bus::String, t_bus::String)::DataFrame
@@ -316,8 +316,8 @@ end
 function get_power_injection_vector(case::Case)::Array{Float64, 1}
     Pd = -case.bus[:, :Pd]
     Pg = zeros(length(Pd), 1)
-    for gen in eachrow(case.gen)
-        Pg[gen.bus] = gen.Pg
+	for (idx, gen) in enumerate(eachrow(case.gen))
+        Pg[idx] = gen.Pg
     end
     return Pg[:] + Pd
 end
