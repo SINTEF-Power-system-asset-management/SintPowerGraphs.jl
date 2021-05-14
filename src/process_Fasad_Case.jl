@@ -65,7 +65,7 @@ end
 function f_process_nodes(mpc, mpc_temp, slack_bus)
     loads_columns = ["bus", "demand", "ref_demand"] 
     nodes_columns = ["ID", "type", "Pd", "Qd", "Gs", "Bs", "area_num", "Vm", "Va", "baseKV", "zone", "max_Vm", "min_Vm"]
-    gen_columns = ["ID", "bus", "Pg", "Qg", "Gs", "Bs", "area_num", "Qmax", "Qmin", "Vg", "mBase", "status", "Pmax", "Pmin"]
+    gen_columns = ["bus", "Pg", "Qg", "Qmax", "Qmin", "Vg", "mBase", "status", "Pmax", "Pmin"]
     mpc.loaddata = DataFrame([Symbol(col) => Any[] for col in loads_columns])
     mpc.bus = DataFrame([Symbol(col) => Any[] for col in nodes_columns])
     mpc.gen = DataFrame([Symbol(col) => Any[] for col in gen_columns])
@@ -80,7 +80,7 @@ function f_process_nodes(mpc, mpc_temp, slack_bus)
         end
         if name==slack_bus 
             nodes_entry[2] = 3
-            gen_entry = [size(mpc.gen)[1]+1, name, 0,0,0,0,1,0,1,0,0,0,0,0]
+            gen_entry = [name, 0,0,0,0,1,0,1,0,0,0,0,0]
             push!(mpc.gen, gen_entry)
         end
         push!(mpc.bus, nodes_entry)
