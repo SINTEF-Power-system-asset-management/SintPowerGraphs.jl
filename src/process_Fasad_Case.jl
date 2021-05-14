@@ -80,7 +80,7 @@ function f_process_nodes(mpc, mpc_temp, slack_bus)
         end
         if name==slack_bus 
             nodes_entry[2] = 3
-            gen_entry = [name, 0,0,0,0,1,0,1,0,0,0,0,0]
+            gen_entry = [name, 0, 0, 0, 0, 1, 0, 1, 0, 0]
             push!(mpc.gen, gen_entry)
         end
         push!(mpc.bus, nodes_entry)
