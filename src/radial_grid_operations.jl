@@ -98,8 +98,7 @@ function merge_line_segments(network::RadialPowerGraph;
 													   field,
 													   f_bus,
 													   t_bus))
-								println(column)
-								temp[!, column] = agg
+								temp[!, column] .= agg
 									push_branch!(red_net,
 												 field,
 												 from_bus,
@@ -189,11 +188,11 @@ the tolerance tol."""
 function remove_lines_by_value(network_orig::PowerGraphBase, func::Function, tol::Float64=0.0, keep_switches::Bool=false)
     network = deepcopy(network_orig.mpc)
     delete_rows = []
-    for branch in eachrow(network.branch)
+	for (idx, branch) in enumerate(eachrow(network.branch))
 		if !(keep_switches && is_switch(branch)) && func(branch) <= tol
             t_bus = branch.t_bus
             f_bus = branch.f_bus
-            append!(delete_rows, getfield(branch, :row))
+            append!(delete_rows, idx)
 			# Ensure that swing bus is connected
 			t_bus_type = network.bus[network.bus.ID .== t_bus, :type][1]
             if  t_bus_type == 3

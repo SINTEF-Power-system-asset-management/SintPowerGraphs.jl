@@ -400,7 +400,7 @@ function take_out_line!(mpc::Case, ID::String)
 		println("Status not in branch matrix, adding it.")
 		 mpc.branch[!, :status] .= true
 	 end
-	mpc.branch[mpc.branch.ID.==ID, :status] = false
+	mpc.branch[mpc.branch.ID.==ID, :status] .= false
 end
 
 """ Sets branch to out of service"""

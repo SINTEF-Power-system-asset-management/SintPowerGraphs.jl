@@ -1,6 +1,6 @@
 using LightGraphs
-using GraphDataFrameBridge
 using MetaGraphs
+using GraphDataFrameBridge
 using TOML
 
 abstract type PowerGraphBase end
