@@ -317,8 +317,13 @@ end
 
 # Note this does not work if there are multiple generators on one bus
 function get_power_injection_vector(case::Case)::Vector{Float64}
-    Pd = -case.bus[:, :Pd]
+	Pd = zeros(size(case.bus, 1))
     Pg = zeros(length(Pd))
+	if isempty(case.loaddata)
+		Pd = -case.bus[:, :Pd]
+	else
+		Pd[get_load_indices(case)] = case.loaddata.Pd
+	end
 	Pg[get_gen_indices(case)] = case.gen.Pg
     return Pg + Pd
 end

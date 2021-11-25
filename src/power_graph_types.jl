@@ -48,7 +48,7 @@ function read_case!(mpc::Case)
     ref_bus = NaN
 	for bus in eachrow(mpc.bus)
         if bus[:type] == 3
-			ref_bus = string(DataFrames.row(bus))
+			ref_bus = bus.ID
         end
     end
     
