@@ -62,7 +62,7 @@ function Case(fname::String)::Case
 	for (field, file) in conf["files"]
 		 temp = CSV.File(joinpath(dir, file)) |> DataFrame
 		# Convert IDs to string
-		 for key in ["ID", "f_bus", "t_bus"]
+		 for key in ["bus", "ID", "f_bus", "t_bus"]
 			 if key in names(temp)
 				 temp[!, key] = string.(temp[:, key])
 			 end
@@ -315,13 +315,12 @@ function get_incidence_matrix(case::Case, consider_status::Bool)::Array{Int64, 2
 	end
 end
 
-function get_power_injection_vector(case::Case)::Array{Float64, 1}
+# Note this does not work if there are multiple generators on one bus
+function get_power_injection_vector(case::Case)::Vector{Float64}
     Pd = -case.bus[:, :Pd]
-    Pg = zeros(length(Pd), 1)
-    for gen in eachrow(case.gen)
-        Pg[gen.bus] = gen.Pg
-    end
-    return Pg[:] + Pd
+    Pg = zeros(length(Pd))
+	Pg[get_gen_indices(case)] = case.gen.Pg
+    return Pg + Pd
 end
 
 function get_line_lims_pu(case::Case)::Array{Float64}
@@ -382,9 +381,9 @@ function get_n_buses(mpc::Case)::Int64
 	nrow(mpc.bus)
 end
 
-""" Returns the row number of a bus given by id"""
-function get_bus_row(mpc::Case, id)::Int64
-	row = findall(mpc.bus.ID .== id)
+""" Returns the row number of an element given by id"""
+function get_id_idx(mpc::Case, elm::Symbol, id::String)::Int64
+	row = findall(getfield(mpc, elm).ID .== id)
 	if length(row) == 0
 		error(string("Bus with ID ", repr(id), " not found."))
 	elseif length(row) > 1
@@ -392,6 +391,11 @@ function get_bus_row(mpc::Case, id)::Int64
 	else
 		return row[1]
 	end
+end
+
+""" Returns the row number of a bus given by id"""
+function get_bus_row(mpc::Case, id::String)::Int64
+	get_id_idx(mpc, :bus, id)
 end
 
 """ Sets branch to out of service"""
@@ -408,3 +412,12 @@ function put_back_line!(mpc::Case, id::String)
 	mpc.branch[mpc.branch.ID.==ID, :status] = true
 end
 
+"""Return indices of the buses with generators."""
+function get_gen_indices(mpc::Case)::Vector{Bool}
+	return ∈(mpc.gen.bus).(mpc.bus.ID)
+end
+
+"""Return indices of the buses with generators."""
+function get_load_indices(mpc::Case)::Vector{Bool}
+	return ∈(mpc.loaddata.bus).(mpc.bus.ID)
+end

@@ -65,6 +65,8 @@ test_island = PowerGraph(joinpath(@__DIR__, "cases", "island_test.toml"))
 
 	@test get_reliability_data(test_4_bus, "1", "2").f_rate[1] == 1
 	@test get_reliability_data(test_4_bus, "1", "3").f_rate[1] == 0
-
+	
+	@test get_gen_indices(test_4_bus) == [true, true, false, false]
+	@test get_load_indices(test_4_bus) == [false, false, true, false]
 
 end

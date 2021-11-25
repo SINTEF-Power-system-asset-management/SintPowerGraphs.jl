@@ -388,3 +388,21 @@ function  get_islanded_branches(network::PowerGraphBase)::Array{Array{Int64, 1},
 						  get_islanded_buses(network))
 end
 
+function get_bus_row(graph::PowerGraph, ID::String)::Int64
+	get_bus_row(graph.mpc, ID)
+end
+
+"""Returns the index of the  element elm with index ID"""
+function get_id_idx(graph::PowerGraph, elm::Symbol, ID::String)::Int64
+	get_id_idx(graph.mpc, elm, ID)
+end
+
+"""Return indices of the buses with generators."""
+function get_gen_indices(graph::PowerGraph)
+	return get_gen_indices(graph.mpc)
+end
+
+"""Return indices of the buses with generators."""
+function get_load_indices(graph::PowerGraph)
+	return get_load_indices(graph.mpc)
+end
