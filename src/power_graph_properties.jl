@@ -1,4 +1,4 @@
-using LightGraphs.LinAlg
+using Graphs.LinAlg
 using LinearAlgebra
 """
     get_bus_data!(network::PowerGraphBase, bus_id::String)

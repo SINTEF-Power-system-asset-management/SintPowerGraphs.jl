@@ -1,6 +1,6 @@
 using Test
 using PowerGraphs
-using LightGraphs
+using Graphs
 using MetaGraphs
 # Set up the simple test system used in the following tests
 include("set_up_test_systems.jl")
