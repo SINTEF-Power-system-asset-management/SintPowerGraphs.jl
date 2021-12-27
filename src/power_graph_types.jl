@@ -26,11 +26,14 @@ function RadialPowerGraph()
     RadialPowerGraph(G, mpc, ref_bus, radial)
 end
 
-function RadialPowerGraph(case_file::String)
-    mpc = Case(case_file::String)
+function RadialPowerGraph(mpc::Case)
     G, ref_bus = read_case!(mpc)
 	radial = subgraph(G, G[ref_bus, :name])
     RadialPowerGraph(G, mpc, ref_bus, radial)
+end
+
+function RadialPowerGraph(case_file::String)
+	RadialPowerGraph(Case(case_file::String))
 end
 
 function PowerGraph(mpc::Case)
