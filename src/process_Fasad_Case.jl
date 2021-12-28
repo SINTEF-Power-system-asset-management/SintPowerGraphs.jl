@@ -4,9 +4,13 @@ end
 
 function process_fasad_case(mpc_temp::Fasad_Case)
     mpc = Case()
+	println("Converting lines")
     f_process_lines(mpc, mpc_temp)
+	println("Converting switches")
     f_process_switch(mpc, mpc_temp)
+	println("Converting transformers")
     f_process_transformers(mpc, mpc_temp)
+	println("Converting nodes")
     f_process_nodes(mpc, mpc_temp, mpc_temp.trans_node)
     return mpc
 end

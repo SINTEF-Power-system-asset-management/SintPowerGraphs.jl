@@ -80,22 +80,15 @@ function Fasad_Case(fname::String)::Fasad_Case
 	conf = TOML.parsefile(fname)
 	dir = splitdir(fname)[1]
 	for (field, files) in conf["files"]
-		df = DataFrame()
-		for file in files 
-			append!(df, CSV.File(joinpath(dir, file), stringtype=String) |> DataFrame)
-		end
-		for key in ["bus", "ID", "f_bus", "t_bus"]
-			 if key in names(df)
-				 df[!, key] = string.(df[:, key])
-			 end
-		 end
-		 setfield!(mpc_fasad, Symbol(field), df)
+		println(string("Reading ", field))
+		 setfield!(mpc_fasad, Symbol(field),
+				   reduce(vcat,
+						  [CSV.File(joinpath(dir, file), stringtype=String) |> DataFrame for file in files]))
 	end
 	mpc_fasad.trans_node = conf["transmission_grid"]
 
 	return mpc_fasad
 end
-
 
 function push_bus!(mpc::Case, bus::DataFrameRow)
     push!(mpc.bus, bus)
