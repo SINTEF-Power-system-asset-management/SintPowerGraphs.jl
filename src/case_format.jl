@@ -79,17 +79,17 @@ function Fasad_Case(fname::String)::Fasad_Case
 	mpc_fasad = Fasad_Case()
 	conf = TOML.parsefile(fname)
 	dir = splitdir(fname)[1]
-	println(dir)
 	for (field, files) in conf["files"]
-		for file in files # instead of setfield I should use an append-style command
-			 temp = CSV.File(joinpath(dir, file), stringtype=String) |> DataFrame
-			 for key in ["bus", "ID", "f_bus", "t_bus"]
-				 if key in names(temp)
-					 temp[!, key] = string.(temp[:, key])
-				 end
-			 end
-			setfield!(mpc_fasad, Symbol(field), temp)
+		df = DataFrame()
+		for file in files 
+			append!(df, CSV.File(joinpath(dir, file), stringtype=String) |> DataFrame)
 		end
+		for key in ["bus", "ID", "f_bus", "t_bus"]
+			 if key in names(df)
+				 df[!, key] = string.(df[:, key])
+			 end
+		 end
+		 setfield!(mpc_fasad, Symbol(field), df)
 	end
 	mpc_fasad.trans_node = conf["transmission_grid"]
 
