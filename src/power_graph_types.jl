@@ -1,4 +1,4 @@
-using LightGraphs
+using Graphs
 using MetaGraphs
 using GraphDataFrameBridge
 using TOML
