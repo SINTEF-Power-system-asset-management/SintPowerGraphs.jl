@@ -189,25 +189,25 @@ function remove_lines_by_value(network_orig::PowerGraphBase, func::Function, tol
     network = deepcopy(network_orig.mpc)
     delete_rows = []
 	for (idx, branch) in enumerate(eachrow(network.branch))
-		if !(keep_switches && is_switch(branch)) && func(branch) <= tol
+		if !(keep_switches && is_switch(network, branch.f_bus, branch.t_bus)) && func(branch) <= tol
             t_bus = branch.t_bus
             f_bus = branch.f_bus
             append!(delete_rows, idx)
 			# Ensure that swing bus is connected
 			t_bus_type = network.bus[network.bus.ID .== t_bus, :type][1]
             if  t_bus_type == 3
-                network.bus[f_bus, :type] = 3
+                network.bus[network.bus.ID .== f_bus, :type] .= 3
             end
             # Connect the buses that were disconnected
             network.branch[network.branch.f_bus .== t_bus, :f_bus] .= f_bus
             network.branch[network.branch.t_bus .== t_bus, :t_bus] .= f_bus
            
             # Move what may have been on the bus
-            network.gen[network.gen.ID .== t_bus, :ID] .= f_bus
+            network.gen[network.gen.ID .== t_bus, :bus] .= f_bus
 
             delete_bus!(network, t_bus)
         end
-    end
+	end
     delete!(network.branch, delete_rows)
 
     G, ref_bus = read_case!(network)
@@ -215,6 +215,6 @@ function remove_lines_by_value(network_orig::PowerGraphBase, func::Function, tol
 end
 
 
-function remove_low_impedance_lines(network_orig::PowerGraphBase, tol::Float64=0.0)
-	remove_lines_by_value(network_orig, series_impedance_norm, tol)
+function remove_low_impedance_lines(network_orig::PowerGraphBase, tol::Float64=0.0, keep_switches::Bool=false)
+	remove_lines_by_value(network_orig, series_impedance_norm, tol, keep_switches)
 end

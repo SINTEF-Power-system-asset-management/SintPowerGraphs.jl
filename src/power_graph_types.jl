@@ -48,7 +48,7 @@ end
 function read_case!(mpc::Case)
 	G = MetaDiGraph(mpc.branch, :f_bus, :t_bus)
 
-    ref_bus = NaN
+    ref_bus = ""
 	for bus in eachrow(mpc.bus)
         if bus[:type] == 3
 			ref_bus = bus.ID
