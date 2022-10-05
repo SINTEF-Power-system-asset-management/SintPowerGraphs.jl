@@ -59,13 +59,13 @@ function read_case!(mpc::Case)
 	
 	if size(mpc.switch, 1) >= 1 
 		# Check if switches have propert closed.
-		if :closed ∉ names(mpc.switch)
+		if :closed ∉ propertynames(mpc.switch)
 			println("I don't know switch status.")
 			println("All switches will be assumed closed.")
 			mpc.switch[!, :closed] .= true
 		end
 		# Check if switches have column breaker
-		if :breaker ∉ names(mpc.switch)
+		if :breaker ∉ propertynames(mpc.switch)
 			println("I don't know if switch or circuit breaker.")
 			println("All switchgear will be assumed to be switches.")
 			mpc.switch[!, :breaker] .= false
