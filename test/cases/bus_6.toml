@@ -6,7 +6,6 @@ switch = "bus_6_switches.csv"
 reldata = "bus_6_reldata.csv"
 loaddata = "bus_6_loaddata.csv"
 transformer = "bus_6_transformers.csv"
-gencost = "bus_6_gencost.csv"
 
 [configuration]
 baseMVA = 100.0

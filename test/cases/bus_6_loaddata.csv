@@ -1,3 +1,3 @@
-ID;demand;ref_demand;
-6;100;100
-7;100;100
+ID;bus;demand;ref_demand;
+6;1;100;100
+7;2;100;100

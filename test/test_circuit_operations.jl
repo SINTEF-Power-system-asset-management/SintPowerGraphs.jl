@@ -1,4 +1,4 @@
-using PowerGraphs
+using SintPowerGraphs
 
 Z₀ = π_segment(0, 0, 0)
 Z₁ = π_segment(1, 1, 1)

@@ -1,3 +1,4 @@
+using SintPowerCase
 using Graphs
 using MetaGraphs
 using GraphDataFrameBridge

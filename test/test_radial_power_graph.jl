@@ -1,4 +1,4 @@
-using PowerGraphs
+using SintPowerGraphs
 using Test 
 
 @testset "Check construction of radial graph" begin
