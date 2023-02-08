@@ -1,10 +1,6 @@
-module PowerGraphs
-
-include("case_format.jl")
-export Case, to_csv, update_ID!, get_n_buses, to_ppc, delete_bus!, get_bus_row, get_gen_indices, get_load_indices, is_branch_type_in_case
+module SintPowerGraphs
 
 include("power_graph_types.jl")
-
 export RadialPowerGraph, PowerGraph, read_case!
 
 include("radial_grid_operations.jl")
@@ -21,9 +17,6 @@ export traverse
 
 include("utility_methods.jl")
 export swapcols!, swaprows!, get_id_idx
-
-include("process_Fasad_Case.jl")
-export process_fasad_case
 
 #include("plot_graphs.jl")
 #export plot_to_web

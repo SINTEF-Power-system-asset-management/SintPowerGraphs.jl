@@ -1,4 +1,4 @@
-name = "PowerGraphs"
+name = "SintPowerGraphs"
 uuid = "4cf3ad31-9d4e-4532-9fdd-b80a3a06e24f"
 authors = ["Sigurd Hofsmo Jakobsen <sigurd.jakobsen@sintef.no>"]
 version = "0.1.0"
@@ -10,4 +10,6 @@ GraphDataFrameBridge = "3c71623a-a715-5176-9801-629b201a4880"
 Graphs = "86223c79-3864-5bf0-83f7-82e725a168b6"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 MetaGraphs = "626554b9-1ddb-594c-aa3c-2596fe9399a5"
+SintPowerCase = "dcf425a8-86bf-4135-b17a-04ddca2f3b37"
 TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"

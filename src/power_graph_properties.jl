@@ -1,3 +1,5 @@
+import SintPowerCase
+using DataFrames
 using Graphs.LinAlg
 using LinearAlgebra
 """
@@ -30,7 +32,7 @@ function get_loaddata(network::PowerGraphBase, bus_id::String)::DataFrame
     return get_loaddata(network.mpc, bus_id)
 end
 
-function push_bus!(network::PowerGraphBase, data::DataFrameRow)
+function SintPowerCase.push_bus!(network::PowerGraphBase, data::DataFrameRow)
     add_vertex!(network.G)
 	set_prop!(network.G, nv(network.G) , :name, string(data.ID))
     push_bus!(network.mpc, data)
@@ -48,7 +50,7 @@ function push_gen!(network::PowerGraphBase, data::DataFrame, bus::String)
     end
 end
 
-function push_gen!(network::PowerGraphBase, data::DataFrameRow)
+function SintPowerCase.push_gen!(network::PowerGraphBase, data::DataFrameRow)
     push_gen!(network.mpc, data)
 end
 
@@ -106,7 +108,7 @@ end
 
     Return a dictionary containing the dictionary with the buse data.
 """
-function get_branch_data(network::PowerGraphBase, f_bus::String, t_bus::String)::DataFrame
+function SintPowerCase.get_branch_data(network::PowerGraphBase, f_bus::String, t_bus::String)::DataFrame
     if has_edge(network.G, f_bus, t_bus)
         return get_branch(network.mpc, f_bus, t_bus)
     else
@@ -114,14 +116,14 @@ function get_branch_data(network::PowerGraphBase, f_bus::String, t_bus::String):
     end
 end
 
-function get_branch_data(network::PowerGraphBase, type::Symbol, f_bus::String,
+function SintPowerCase.get_branch_data(network::PowerGraphBase, type::Symbol, f_bus::String,
 						 t_bus::String)::DataFrame
 	get_branch_data(network.mpc, type, f_bus, t_bus)
 end
 
-function get_branch_data(network::PowerGraphBase, type::Symbol, column::Symbol, f_bus::String,
+function SintPowerCase.get_branch_data(network::PowerGraphBase, type::Symbol, column::Symbol, f_bus::String,
 						 t_bus::String)
-	get_branch_data(network.mpc, type, column, f_bus, t_bus)
+	SintPowerCase.get_branch_data(network.mpc, type, column, f_bus, t_bus)
 end
 
 function get_reliability_data(network::PowerGraphBase, f_bus::String, t_bus::String)::DataFrame
@@ -186,7 +188,7 @@ end
 
     Returns true if the bus bus_id is a load.
 """
-function is_load_bus(network::PowerGraphBase, bus_id::String)::Bool
+function SintPowerCase.is_load_bus(network::PowerGraphBase, bus_id::String)::Bool
 	return any(x-> x>0, network.mpc.bus[network.mpc.bus.ID.==bus_id, :Pd])
 end
 
@@ -195,15 +197,15 @@ end
 
     Returns true if the bus bus_id is a load.
 """
-function is_gen_bus(network::PowerGraphBase, bus_id::String)
+function SintPowerCase.is_gen_bus(network::PowerGraphBase, bus_id::String)
     return is_gen_bus(network.mpc, bus_id)
 end
 
-function is_indicator(network::PowerGraphBase, f_bus::String, t_bus::String)
+function SintPowerCase.is_indicator(network::PowerGraphBase, f_bus::String, t_bus::String)
 	is_indicator(network.mpc, f_bus, t_bus)
 end
 
-function is_switch(network::PowerGraphBase, f_bus, t_bus)
+function SintPowerCase.is_switch(network::PowerGraphBase, f_bus, t_bus)
 	is_switch(network.mpc, f_bus, t_bus)
 end
 
@@ -242,28 +244,6 @@ function get_π_equivalent(branch::DataFrameRow)::π_segment
 end
 
 """
-    get_dc_admittance_matrix(network::PowerGraphBase)::Array{Float64}
-    Returns the admittance matrix for performing a dc power flow.
-"""
-function get_dc_admittance_matrix(network::PowerGraphBase)::Array{Float64, 2}
-    A = incidence_matrix(network.G)
-	return A*Diagonal(get_susceptance_vector(network))*A'
-end
-
-function get_dc_admittance_matrix(network::PowerGraphBase, consider_status::Bool)::Array{Float64, 2}
-    A = get_incidence_matrix(network.mpc, consider_status)
-	return A*Diagonal(get_susceptance_vector(network, consider_status))*A'
-end
-
-function get_incidence_matrix(network::PowerGraphBase)::Array{Int64, 2}
-	return get_incidence_matrix(network.mpc)
-end
-
-function get_incidence_matrix(network::PowerGraphBase, consider_status::Bool)::Array{Int64, 2}
-	return get_incidence_matrix(network.mpc, consider_status)
-end
-
-"""
     get_susceptance_vector(network::PowerGraphBase)::Array{Float64}
     Returns the susceptance vector for performing a dc power flow.
 """
@@ -291,7 +271,7 @@ function n_vertices(network::PowerGraphBase)::Int
     return nv(network.G)
 end
 
-function take_out_line!(network::PowerGraphBase, id::String)
+function SintPowerCase.take_out_line!(network::PowerGraphBase, id::String)
 	take_out_line!(network.mpc, id)
     branches = get_branch(network.mpc, id)
 	for branch in eachrow(branches)
@@ -398,11 +378,11 @@ function get_id_idx(graph::PowerGraph, elm::Symbol, ID::String)::Int64
 end
 
 """Return indices of the buses with generators."""
-function get_gen_indices(graph::PowerGraph)
+function SintPowerCase.get_gen_indices(graph::PowerGraph)
 	return get_gen_indices(graph.mpc)
 end
 
 """Return indices of the buses with generators."""
-function get_load_indices(graph::PowerGraph)
+function SintPowerCase.get_load_indices(graph::PowerGraph)
 	return get_load_indices(graph.mpc)
 end

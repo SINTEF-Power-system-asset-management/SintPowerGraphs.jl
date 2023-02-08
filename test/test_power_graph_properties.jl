@@ -8,30 +8,6 @@ B = [b_12+b_13 -b_12 -b_13;
      -b_12 b_12+b_23 -b_23;
      -b_13 -b_23 b_13+b_23]
 
-A = [1 -1 0;
-     1 0 -1;
-     0 1 -1]
-
-A_4_bus = [1 -1 0 0;
-		   1 0 -1 0;
-		   0 1 0 -1;
-		   0 0 1 -1;
-		   1 0 0 -1]
-	
-A_island_test = [0 -1 0 0 1 0;
-				 1 0 -1 0 0 0;
-				 0 0 -1 0 0 1;
-				 0 0 0 1 -1 0;
-				 0 -1 0 1 0 0;
-				 1 0 0 0 0 -1]
-
-A_island_bd = [1 -1 0 0 0 0;
-			   1 0 -1 0 0 0;
-			   0 1 -1 0 0 0;
-			   0 0 0 1 -1 0;
-			   0 0 0 1 0 -1;
-			   0 0 0 0 1 -1]
-
 test_3_bus = PowerGraph(joinpath(@__DIR__, "cases", "bus_3.toml"))
 test_4_bus = PowerGraph(joinpath(@__DIR__, "cases", "bus_4.toml"))
 
@@ -45,28 +21,19 @@ test_island = PowerGraph(joinpath(@__DIR__, "cases", "island_test.toml"))
     @test get_branch_data(test, "2", "3")[1, :x] == 0.5 # Check if the branch reactance is correct
     @test is_load_bus(test, "7") # Check if the bus is a load bus
     @test is_gen_bus(test, "1") # Check if the bus is a load bus
-    @test B == get_dc_admittance_matrix(test_3_bus)
-    @test A == get_incidence_matrix(test_3_bus)
-    @test A_4_bus == get_incidence_matrix(test_4_bus)
     @test n_edges(test_3_bus) == 3
     @test n_vertices(test_3_bus) == 3
 	@test is_switch(test, "4", "7")
 	@test ~is_switch(test, "4", "9")
 	@test ~is_indicator(test, "4", "7")
 	@test get_branch_data(test, :reldata, :fault_rate, "1", "2")[1] == 0.01
-	@test size(get_incidence_matrix(four_area)) == (30,25)
 	take_out_line!(test, "2")
 	@test Array[[1, 2], [3, 4, 5, 6, 7]] == get_islanded_buses(test)
-
-	take_out_line!(test_island, "4")
-	@test A_island_test == get_incidence_matrix(test_island, true)
-	A_bd, bus_mapping, branch_mapping = get_island_incidence_matrix(test_island)
-	@test A_island_bd == A_bd
 
 	@test get_reliability_data(test_4_bus, "1", "2").f_rate[1] == 1
 	@test get_reliability_data(test_4_bus, "1", "3").f_rate[1] == 0
 	
 	@test get_gen_indices(test_4_bus) == [true, true, false, false]
-	@test get_load_indices(test_4_bus) == [false, false, true, false]
+	@test get_load_indices(test_4_bus) == [false, false, true, true]
 
 end
