@@ -82,13 +82,15 @@ function read_case!(mpc::Case)
         #            ]
 
         if is_switch(mpc, branch.f_bus, branch.t_bus)
-            switch = get_switch(mpc, branch.f_bus, branch.t_bus)
-            if switch.breaker[1] == 1
-                # it is a breaker
+            switches = get_switch(mpc, branch.f_bus, branch.t_bus)
+            if any(switches.breaker)
+                # If there is a breaker on the branch we will treat it as a breaker
                 set_prop!(G, G[string(branch.f_bus), :name], G[string(branch.t_bus), :name], :switch, 2)
             else
                 # it is a switch (it can be open or closed)
-                set_prop!(G, G[string(branch.f_bus), :name], G[string(branch.t_bus), :name], :switch, switch.closed[1])
+                # If one switch is open the branch is considered and open switch
+                set_prop!(G, G[string(branch.f_bus), :name], G[string(branch.t_bus), :name], :switch,
+                          all(switches.closed) ? 1 : 0)
             end
         else
             # it is a normal branch
