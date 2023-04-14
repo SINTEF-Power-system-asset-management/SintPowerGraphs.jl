@@ -10,6 +10,7 @@ mutable struct RadialPowerGraph <: PowerGraphBase
     G::MetaDiGraph # graph containing the power network
     mpc::Case
     ref_bus::String # The id of the reference bus
+    reserves::Vector{String} # List of ids for reserve connections
     radial::MetaDiGraph # The graph directed from the transmission node
 end
 
@@ -23,14 +24,15 @@ function RadialPowerGraph()
     G = MetaDiGraph()
     mpc = Case()
     ref_bus = ""
+    reserves = []
     radial = MetaDiGraph()
-    RadialPowerGraph(G, mpc, ref_bus, radial)
+    RadialPowerGraph(G, mpc, ref_bus, reserves, radial)
 end
 
 function RadialPowerGraph(mpc::Case)
     G, ref_bus = read_case!(mpc)
 	radial = subgraph(G, G[ref_bus, :name])
-    RadialPowerGraph(G, mpc, ref_bus, radial)
+    RadialPowerGraph(G, mpc, ref_bus, [], radial)
 end
 
 function RadialPowerGraph(case_file::String)
