@@ -1,4 +1,4 @@
-using PowerGraphs
+using SintPowerGraphs
 
 filepath = joinpath(@__DIR__, "cases", "bus_6.toml")
 example = RadialPowerGraph(filepath)

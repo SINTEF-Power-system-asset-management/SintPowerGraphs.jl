@@ -49,7 +49,8 @@ function PowerGraph(case_file::String)
 end
 
 function read_case!(mpc::Case)
-	G = MetaDiGraph(mpc.branch, :f_bus, :t_bus)
+	G = MetaDiGraph(mpc.branch, :f_bus, :t_bus,
+                   edge_attributes=:rateA)
 
     ref_bus = ""
 	for bus in eachrow(mpc.bus)
