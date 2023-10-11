@@ -30,14 +30,15 @@ function subgraph(g::MetaDiGraph, start::Int = 0, dfs::Bool = true)::MetaDiGraph
             #if get_prop(g, e, :switch) != 0 
             add_edge!(newgraph, src, tar)
 			# Sometimes the lines are in the opposite direction in the original graph
-			if has_edge(g, e.src, e.dst)
-				set_prop!(newgraph, src, tar, :switch, get_prop(g_copy, e.src, e.dst, :switch))
-			else
-				# When f_bus and t_bus have been inversed the property disappears from the 
-				# graph when going from MetaDiGraph to MetaGraph
-				set_prop!(newgraph, src, tar, :switch, get_prop(g, e.dst, e.src, :switch))
-			end
-           # end
+            for prop in [:switch, :rateA]
+                if has_edge(g, e.src, e.dst)
+                    set_prop!(newgraph, src, tar, prop, get_prop(g_copy, e.src, e.dst, prop))
+                else
+                    # When f_bus and t_bus have been inversed the property disappears from the 
+                    # graph when going from MetaDiGraph to MetaGraph
+                    set_prop!(newgraph, src, tar, prop, get_prop(g, e.dst, e.src, prop))
+                end
+            end
         end
     end
     return newgraph
