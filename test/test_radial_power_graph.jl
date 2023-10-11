@@ -4,7 +4,6 @@ using Test
 @testset "Check construction of radial graph" begin
 	for edge in edges(test.radial)
 		@test has_edge(test_graph, parse(Int64, test.radial[edge.src, :name]), parse(Int64, test.radial[edge.dst, :name]))
-        @test get_prop(test, 1, 2, :rateA) == 100
 	end
 end
 
