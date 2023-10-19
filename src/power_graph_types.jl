@@ -100,5 +100,12 @@ function read_case!(mpc::Case)
             set_prop!(G, G[string(branch.f_bus), :name], G[string(branch.t_bus), :name], :switch, -1)
         end
     end
+    # Add loads to edges
+    for v in vertices(G)
+        set_prop!(G, v, :load,
+                  sum(
+                      mpc.loaddata[mpc.loaddata.bus.==get_prop(G, v, :name), :P]))
+    end
+        
     return G, ref_bus
 end

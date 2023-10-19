@@ -29,7 +29,7 @@ function get_gen_data(network::PowerGraphBase, bus_id::String)::DataFrame
 end
 
 function get_loaddata(network::PowerGraphBase, bus_id::String)::DataFrame
-    return get_loaddata(network.mpc, bus_id)
+    return SintPowerCase.get_loaddata(network.mpc, bus_id)
 end
 
 function SintPowerCase.push_bus!(network::PowerGraphBase, data::DataFrameRow)
