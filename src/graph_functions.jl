@@ -19,7 +19,9 @@ function subgraph(g::MetaDiGraph, start::Int = 0, dfs::Bool = true)::MetaDiGraph
 
     for (newi, i) in enumerate(inds)  # in BFS order
         add_vertex!(newgraph)
-        set_prop!(newgraph, newi, :name, get_prop(g_copy, i, :name))
+        for prop in [:name, :load]
+            set_prop!(newgraph, newi, prop, get_prop(g_copy, i, prop))
+        end
         reindex[i] = newi
     end
 
