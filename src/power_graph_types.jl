@@ -86,6 +86,9 @@ function read_case!(mpc::Case)
 
         if is_switch(mpc, branch.f_bus, branch.t_bus)
             switches = get_switch(mpc, branch.f_bus, branch.t_bus)
+            set_prop!(G,
+                      G[string(branch.f_bus), :name], G[string(branch.t_bus), :name],
+                      :switch_buses, switches.f_bus)
             if any(switches.breaker)
                 # If there is a breaker on the branch we will treat it as a breaker
                 set_prop!(G, G[string(branch.f_bus), :name], G[string(branch.t_bus), :name], :switch, 2)
@@ -98,6 +101,9 @@ function read_case!(mpc::Case)
         else
             # it is a normal branch
             set_prop!(G, G[string(branch.f_bus), :name], G[string(branch.t_bus), :name], :switch, -1)
+            set_prop!(G,
+                      G[string(branch.f_bus), :name], G[string(branch.t_bus), :name],
+                      :switch_buses, [])
         end
     end
     # Add loads to edges

@@ -32,7 +32,7 @@ function subgraph(g::MetaDiGraph, start::Int = 0, dfs::Bool = true)::MetaDiGraph
             #if get_prop(g, e, :switch) != 0 
             add_edge!(newgraph, src, tar)
 			# Sometimes the lines are in the opposite direction in the original graph
-            for prop in [:switch, :rateA]
+            for prop in [:switch, :rateA, :switch_buses]
                 if has_edge(g, e.src, e.dst)
                     set_prop!(newgraph, src, tar, prop, get_prop(g_copy, e.src, e.dst, prop))
                 else
