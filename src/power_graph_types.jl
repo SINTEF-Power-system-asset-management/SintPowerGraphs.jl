@@ -106,11 +106,17 @@ function read_case!(mpc::Case)
                       :switch_buses, [])
         end
     end
-    # Add loads to edges
+    # Add loads to vertices
     for v in vertices(G)
         set_prop!(G, v, :load,
                   sum(
-                      mpc.loaddata[mpc.loaddata.bus.==get_prop(G, v, :name), :P]))
+                      mpc.load[mpc.load.bus.==get_prop(G, v, :name), :P]))
+        nfc = mpc.load[mpc.load.bus.==get_prop(G, v, :name), :nfc]
+
+        # This indicates that all loads at this node is connected as a non-firm connection.
+        # In some cases this may not be the case.
+        set_prop!(G, v, :nfc,
+                  isempty(nfc) ? false : nfc[1])
     end
         
     return G, ref_bus
