@@ -117,6 +117,10 @@ function read_case!(mpc::Case)
         # In some cases this may not be the case.
         set_prop!(G, v, :nfc,
                   isempty(nfc) ? false : nfc[1])
+        
+        
+            set_prop!(G, v, :der, !isempty(mpc.storage) &&
+                      !isempty(mpc.storage[mpc.storage.bus.==get_prop(G, v, :name), :Pmax]))
     end
         
     return G, ref_bus
