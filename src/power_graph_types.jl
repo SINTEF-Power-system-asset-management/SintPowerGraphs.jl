@@ -10,7 +10,6 @@ mutable struct RadialPowerGraph <: PowerGraphBase
     G::MetaDiGraph # graph containing the power network
     mpc::Case
     ref_bus::String # The id of the reference bus
-    reserves::Vector{String} # List of ids for reserve connections
     radial::MetaDiGraph # The graph directed from the transmission node
 end
 
@@ -26,13 +25,13 @@ function RadialPowerGraph()
     ref_bus = ""
     reserves = []
     radial = MetaDiGraph()
-    RadialPowerGraph(G, mpc, ref_bus, reserves, radial)
+    RadialPowerGraph(G, mpc, ref_bus, radial)
 end
 
 function RadialPowerGraph(mpc::Case)
     G, ref_bus = read_case!(mpc)
 	radial = subgraph(G, G[ref_bus, :name])
-    RadialPowerGraph(G, mpc, ref_bus, [], radial)
+    RadialPowerGraph(G, mpc, ref_bus, radial)
 end
 
 function RadialPowerGraph(case_file::String)
@@ -108,19 +107,9 @@ function read_case!(mpc::Case)
     end
     # Add loads to vertices
     for v in vertices(G)
-        set_prop!(G, v, :load,
-                  sum(
-                      mpc.load[mpc.load.bus.==get_prop(G, v, :name), :P]))
-        nfc = mpc.load[mpc.load.bus.==get_prop(G, v, :name), :nfc]
-
-        # This indicates that all loads at this node is connected as a non-firm connection.
-        # In some cases this may not be the case.
-        set_prop!(G, v, :nfc,
-                  isempty(nfc) ? false : nfc[1])
-        
-        
-            set_prop!(G, v, :der, !isempty(mpc.storage) &&
-                      !isempty(mpc.storage[mpc.storage.bus.==get_prop(G, v, :name), :Pmax]))
+        for prop in [:gen, :load]
+            set_prop!(G, v, prop, get_prop(G, v, :name) ∈ getfield(mpc, prop).bus)
+        end
     end
         
     return G, ref_bus

@@ -5,10 +5,6 @@ using Test
 	for edge in edges(test.radial)
 		@test has_edge(test_graph, parse(Int64, test.radial[edge.src, :name]), parse(Int64, test.radial[edge.dst, :name]))
 	end
-    @test get_prop(test.G,
-                   test.G["6", :name], :load) == 100
-    @test get_prop(test.radial,
-                   test.radial["6", :name], :load) == 100
     @test get_prop(test.G, 4, 7, :switch_buses) == ["4"]
     @test get_prop(test.radial,
                    test.radial["4", :name], test.radial["7", :name],
