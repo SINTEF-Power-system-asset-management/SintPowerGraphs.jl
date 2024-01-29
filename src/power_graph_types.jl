@@ -107,8 +107,13 @@ function read_case!(mpc::Case)
     end
     # Add loads to vertices
     for v in vertices(G)
-        for prop in [:gen, :load]
-            set_prop!(G, v, prop, get_prop(G, v, :name) ∈ getfield(mpc, prop).bus)
+        for (prop, feat) in zip([:load, :gen], [:nfc, :external])
+            df = getfield(mpc, prop)
+            is_prop = get_prop(G, v, :name) ∈ df.bus
+            set_prop!(G, v, prop, is_prop)
+            if is_prop
+                set_prop!(G, v, feat, any(df[df.bus.==get_prop(G, v, :name), feat]))
+            end
         end
     end
         

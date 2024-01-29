@@ -38,5 +38,7 @@ test_island = PowerGraph(joinpath(@__DIR__, "cases", "island_test.toml"))
 	@test get_load_indices(test_4_bus) == [false, false, true, true]
 
     @test get_prop(test_3_bus.G, 3, :load)
+    @test !get_prop(test_3_bus.G, 3, :nfc)
+    @test get_prop(test_3_bus.G, 1, :external)
 
 end
