@@ -7,7 +7,7 @@ using TOML
 abstract type PowerGraphBase end
 
 mutable struct RadialPowerGraph <: PowerGraphBase
-    G::MetaDiGraph # graph containing the power network
+    G::AbstractGraph # graph containing the power network
     mpc::Case
     ref_bus::String # The id of the reference bus
     radial::MetaDiGraph # The graph directed from the transmission node
