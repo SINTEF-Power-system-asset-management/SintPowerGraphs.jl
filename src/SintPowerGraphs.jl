@@ -18,6 +18,9 @@ export traverse
 include("utility_methods.jl")
 export swapcols!, swaprows!, get_id_idx
 
+include("meta_graph_operations.jl")
+export undirected_copy
+
 #include("plot_graphs.jl")
 #export plot_to_web
 

@@ -1,7 +1,3 @@
-using PowerGraphs
+G = undirected_copy(test.G)
 
-fname = joinpath(@__DIR__, joinpath("fasad_tsh", "TSH-grid-no-indicators.toml"))
-
-network = MetaPowerGraph(fname)
-
-println("ciao")
+@test props(G, 2, 3) == props(test.G, 3, 2) 
