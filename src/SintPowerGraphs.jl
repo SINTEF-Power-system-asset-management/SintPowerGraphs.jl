@@ -13,13 +13,13 @@ include("circuit_operations.jl")
 export π_segment, is_zero_impedance_line, series_impedance_norm
 
 include("graph_functions.jl")
-export traverse
+export traverse, subgraph
 
 include("utility_methods.jl")
 export swapcols!, swaprows!, get_id_idx
 
-include("meta_graph_operations.jl")
-export undirected_copy
+# include("meta_graph_operations.jl")
+# export undirected_copy
 
 #include("plot_graphs.jl")
 #export plot_to_web

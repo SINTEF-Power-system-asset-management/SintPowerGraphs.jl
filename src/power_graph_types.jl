@@ -14,13 +14,13 @@ mutable struct RadialPowerGraph <: PowerGraphBase
 end
 
 mutable struct PowerGraph <: PowerGraphBase
-    G::MetaDiGraph
+    G::AbstractGraph
     mpc::Case
     ref_bus::String
 end
 
 function RadialPowerGraph()
-    G = MetaDiGraph()
+    G = MetaGraph()
     mpc = Case()
     ref_bus = ""
     reserves = []
@@ -47,8 +47,8 @@ function PowerGraph(case_file::String)
     PowerGraph(Case(case_file::String))
 end
 
-function read_case!(mpc::Case)
-	G = MetaDiGraph(mpc.branch, :f_bus, :t_bus,
+function read_case!(mpc::Case, )
+	G = MetaGraph(mpc.branch, :f_bus, :t_bus,
                    edge_attributes=:rateA)
 
     ref_bus = ""

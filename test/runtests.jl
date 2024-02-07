@@ -13,4 +13,4 @@ include("test_power_graph_properties.jl")
 
 include("test_circuit_operations.jl")
 
-include("test_metagraph.jl")
+# include("test_metagraph.jl")

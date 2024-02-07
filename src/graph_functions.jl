@@ -1,11 +1,11 @@
 # These two functions below are taken from a github repo
 
 """Make a subgraph out of all descendents with a given node as root"""
-function subgraph(g::MetaDiGraph, start::Int = 0, dfs::Bool = true)::MetaDiGraph
+function subgraph(g::AbstractGraph, start::Int = 0, dfs::Bool = true)::MetaDiGraph
     # start = start == 0 ? root(g) : start
 
     # removing open switch edges before traversing with BFS
-	g_copy = MetaGraph(g)
+	g_copy = copy(g)
     open_switches_iter = filter_edges(g, (g,x)->(get_prop(g, x, :switch) == 0))
     for e in open_switches_iter
         rem_edge!(g_copy, e)
