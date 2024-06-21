@@ -15,5 +15,3 @@ function undirected_copy(g::MetaDiGraph)
     end
     return g_c
 end
-
-

@@ -9,8 +9,8 @@ using PowerGraphs
 
 # ╔═╡ 41a7237a-8af7-11eb-33b6-d363ce394c38
 begin
-	fname = "cases/east_side.toml"
-	example = RadialPowerGraph(fname)
+    fname = "cases/east_side.toml"
+    example = RadialPowerGraph(fname)
 end
 
 # ╔═╡ Cell order:

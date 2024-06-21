@@ -5,14 +5,14 @@ function subgraph(g::AbstractGraph, start::Int = 0, dfs::Bool = true)::MetaDiGra
     # start = start == 0 ? root(g) : start
 
     # removing open switch edges before traversing with BFS
-	g_copy = copy(g)
-    open_switches_iter = filter_edges(g, (g,x)->(get_prop(g, x, :switch) == 0))
+    g_copy = copy(g)
+    open_switches_iter = filter_edges(g, (g, x) -> (get_prop(g, x, :switch) == 0))
     for e in open_switches_iter
         rem_edge!(g_copy, e)
     end
 
     inds = traverse(g_copy, start, dfs)
-	newgraph = MetaDiGraph()
+    newgraph = MetaDiGraph()
     set_indexing_prop!(newgraph, :name)
     set_prop!(newgraph, :root, 1)
     reindex = Dict{Int,Int}()
@@ -31,10 +31,16 @@ function subgraph(g::AbstractGraph, start::Int = 0, dfs::Bool = true)::MetaDiGra
         if !(nothing in [src, tar])
             #if get_prop(g, e, :switch) != 0 
             add_edge!(newgraph, src, tar)
-			# Sometimes the lines are in the opposite direction in the original graph
+            # Sometimes the lines are in the opposite direction in the original graph
             for prop in [:switch, :rateA, :switch_buses]
                 if has_edge(g, e.src, e.dst)
-                    set_prop!(newgraph, src, tar, prop, get_prop(g_copy, e.src, e.dst, prop))
+                    set_prop!(
+                        newgraph,
+                        src,
+                        tar,
+                        prop,
+                        get_prop(g_copy, e.src, e.dst, prop),
+                    )
                 else
                     # When f_bus and t_bus have been inversed the property disappears from the 
                     # graph when going from MetaDiGraph to MetaGraph
@@ -52,7 +58,7 @@ ordering from :args in the edges is not used...yet)
 """
 function traverse(g::MetaGraph, start::Int = 0, dfs::Bool = true)::Vector{Int}
     # start = start == 0 ? root(g) : start
-    
+
     seen = Vector{Int}()
     visit = Vector{Int}([start])
     @assert start in vertices(g) "can't access $start in $(props(g, 1))"
@@ -61,7 +67,11 @@ function traverse(g::MetaGraph, start::Int = 0, dfs::Bool = true)::Vector{Int}
         if !(next in seen)
             for n in neighbors(g, next)
                 if !(n in seen)
-                    if dfs append!(visit, n) else insert!(visit, 1, n) end
+                    if dfs
+                        append!(visit, n)
+                    else
+                        insert!(visit, 1, n)
+                    end
                 end
             end
             push!(seen, next)

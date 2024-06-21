@@ -12,7 +12,7 @@ graph = PowerGraph(case_data)
 
 # After we have loaded the case we can plot it using GraphPlot
 
-gplot(graph.G, edgelabel=1:n_edges(graph), nodelabel=1:n_vertices(graph))
+gplot(graph.G, edgelabel = 1:n_edges(graph), nodelabel = 1:n_vertices(graph))
 
 # From the plot of the graph, we can see that the system can be easily split into two islands.
 
@@ -21,8 +21,13 @@ take_out_line!(graph, 4)
 
 # After we take out the line it's nice to plot the system again
 
-layout=(args...)->spring_layout(args...; C=10)
-gplot(graph.G, edgelabel=[1,2,3,5,6,7], layout = layout, nodelabel=1:n_vertices(graph))
+layout = (args...) -> spring_layout(args...; C = 10)
+gplot(
+    graph.G,
+    edgelabel = [1, 2, 3, 5, 6, 7],
+    layout = layout,
+    nodelabel = 1:n_vertices(graph),
+)
 
 # We can now see that the system is split into two islands. The incidence matrix for this system is given below.
 
@@ -47,8 +52,9 @@ branch_mapping
 
 b = get_susceptance_vector(graph, true)
 # We have to remember to swap the position of the suceptances
-b[branch_mapping[1][1]], b[branch_mapping[2][1]] = b[branch_mapping[2][1]], b[branch_mapping[1][1]]
+b[branch_mapping[1][1]], b[branch_mapping[2][1]] =
+    b[branch_mapping[2][1]], b[branch_mapping[1][1]]
 D = Diagonal(b)
-B = A[1:3,1:3]'*D[1:3,1:3]*A[1:3,1:3]
+B = A[1:3, 1:3]' * D[1:3, 1:3] * A[1:3, 1:3]
 
 det(B[2:3, 2:3])

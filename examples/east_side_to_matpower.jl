@@ -27,23 +27,27 @@ example = RadialPowerGraph(filepath)
 
 df = example.mpc.reldata
 # Divide by 1000 to go from km to m
-df.length/1000
-df[df.length.<2/100,:][:,[:f_bus, :t_bus, :length]]
+df.length / 1000
+df[df.length.<2/100, :][:, [:f_bus, :t_bus, :length]]
 
 # ## Merge line segments
 # Sometimes one line is represented as several line segements. This is the case for this test network. One easy method for making the network smaller is therefore to merge the segements. Before merging the lines we specify, which of the features of the lines should be aggregated. In the code below we specify that we want failure frequencies and line lengths to be aggregated, before we merge the line segments.
 
-aggregators = Dict(:reldata => Dict(:failure_frequency_permanent => 0.0,
-									:failure_frequency_temporary => 0.0,
-									:length => 0.0))
-red_example = merge_line_segments(example, aggregators=aggregators)
+aggregators = Dict(
+    :reldata => Dict(
+        :failure_frequency_permanent => 0.0,
+        :failure_frequency_temporary => 0.0,
+        :length => 0.0,
+    ),
+)
+red_example = merge_line_segments(example, aggregators = aggregators)
 
 # Before merging we had 1133 buses in the case, now we have only 440 buses. We can also check how many lines shorter than 2cm we hace now:
 
 df = red_example.mpc.reldata
 # Divide by 1000 to go from km to m
-df.length/1000
-df[df.length.<2/100,:][:,[:f_bus, :t_bus, :length]]
+df.length / 1000
+df[df.length.<2/100, :][:, [:f_bus, :t_bus, :length]]
 
 # There is now 202 lines shorter than 2cm. This is a big change compare to before when the number was 940. To be able to run power flows we will also remove lines with a low impedance. 
 #
@@ -58,15 +62,23 @@ small = remove_low_impedance_lines(red_example, 1e-5)
 # There are two nice options for plotting. We can use GraphPlots as demonstrated below.
 
 set_default_plot_size(25cm, 25cm)
-gplot(small.G, nodelabel=1:n_vertices(small), arrowlengthfrac=0)
+gplot(small.G, nodelabel = 1:n_vertices(small), arrowlengthfrac = 0)
 
 # Another nice option for plotting is to use Plots and GraphRecipes.
 
-gr(alpha=1, size=(700,800), dpi=150)
+gr(alpha = 1, size = (700, 800), dpi = 150)
 # Plotly is a nice backend that allows for interacting with the plot (zoomin, paning, ...). However, it is no
 # supported by GitHub
 # plotly(alpha=1, size=(700,800), dpi=150)
-graphplot(small.G, method=:tree, nodeshape=:circle, names=1:n_vertices(small), curves=false, fontsize=5, self_edge_size=0.5)
+graphplot(
+    small.G,
+    method = :tree,
+    nodeshape = :circle,
+    names = 1:n_vertices(small),
+    curves = false,
+    fontsize = 5,
+    self_edge_size = 0.5,
+)
 
 # ## Running power flow
 # First we have to name the buses correctly
@@ -89,5 +101,3 @@ print(network.lines_t["p0"])
 # We can now write the network to csv files for later processing in MATLAB
 
 to_csv(mpc, joinpath(@__DIR__, "reduced_matpower"))
-
-

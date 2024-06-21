@@ -10,4 +10,3 @@ add_edge!(test_graph, 4, 7)
 
 # Read in the system we are testing on
 test = RadialPowerGraph(joinpath(@__DIR__, "cases", "bus_6.toml"))
-
