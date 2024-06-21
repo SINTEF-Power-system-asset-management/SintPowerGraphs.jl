@@ -12,7 +12,7 @@ jobs:
     runs-on: ${{matrix.os}}
     strategy:
       matrix:
-        julia-version: ['1.10.4']
+        julia-version: ["1.10.4"]
         julia-arch: [x64, x86]
         os: [ubuntu-latest, windows-latest, macOS-latest]
         exclude:
@@ -24,6 +24,8 @@ jobs:
         with:
           version: ${{ matrix.julia-version }}
           arch: ${{ matrix.julia-arch }}
+      - name: "Install SintPowerCase from git because it's not in the registry yet"
+        run: julia --project=@. -e 'import Pkg; Pkg.develop(url="https://github.com/SINTEF-Power-system-asset-management/SintPowerCase.jl")'
       - uses: julia-actions/cache@v1
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
